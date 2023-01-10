@@ -12,23 +12,23 @@ class Database():
 
     def initialise(self):
         cur = self.conn.cursor()
-        cur.execute("CREATE TABLE Tags(Tag INT, Name TEXT, Comment TEXT)")
+        cur.execute("CREATE TABLE Tags(Tag INT UNIQUE, Name TEXT, Comment TEXT)")
         self.conn.commit()
 
     def lookup(self, tag):
         cur = self.conn.cursor()
-        cur.execute("SELECT Name, Comment FROM Tags WHERE Tag = x'"+tag.encode('hex')+"'")
+        cur.execute("SELECT Name, Comment FROM Tags WHERE Tag = x'"+tag.hex()+"'")
         return cur.fetchone()
 
     def update(self, tag, name, comment):
         t = (name, comment)
         cur = self.conn.cursor()
         # seems you can't use variables in a where clause...
-        cur.execute("UPDATE Tags SET Name=?, Comment=? WHERE Tag=x'"+tag.encode('hex')+"'", t)
+        cur.execute("UPDATE Tags SET Name=?, Comment=? WHERE Tag=x'"+tag.hex()+"'", t)
         self.conn.commit()
 
     def insert(self, tag, name, comment):
         t = (name, comment)
         cur = self.conn.cursor()
-        cur.execute("INSERT INTO Tags VALUES(x'"+tag.encode('hex')+"', ?, ?)", t)
+        cur.execute("INSERT INTO Tags VALUES(x'"+tag.hex()+"', ?, ?)", t)
         self.conn.commit()
