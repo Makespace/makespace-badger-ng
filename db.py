@@ -18,7 +18,10 @@ class Database():
     def lookup(self, tag):
         cur = self.conn.cursor()
         cur.execute("SELECT Name, Comment FROM Tags WHERE Tag = x'"+tag.hex()+"'")
-        return cur.fetchone()
+        res = cur.fetchone()
+        if res is None:
+            raise ValueError("tag not found")
+        return res
 
     def update(self, tag, name, comment):
         t = (name, comment)
@@ -26,9 +29,13 @@ class Database():
         # seems you can't use variables in a where clause...
         cur.execute("UPDATE Tags SET Name=?, Comment=? WHERE Tag=x'"+tag.hex()+"'", t)
         self.conn.commit()
+        if cur.rowcount != 1:
+            raise Exception("tag update failed - does it exist?")
 
     def insert(self, tag, name, comment):
         t = (name, comment)
         cur = self.conn.cursor()
         cur.execute("INSERT INTO Tags VALUES(x'"+tag.hex()+"', ?, ?)", t)
         self.conn.commit()
+        if cur.rowcount != 1:
+            raise Exception("tag insert failed")
