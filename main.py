@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from db import Database
+from label import Label
 import argparse
 
 def enrol(db, args):
@@ -17,6 +18,15 @@ def lookup(db, args):
     tag = bytes(args.tag, 'utf-8')
     name, contact = db.lookup(tag)
     print(f'Lookup tag:{tag}, name:{name}, contact:{contact}')
+
+def label(db, args):
+    lbl = Label(args.lines, args.dpi, (args.width_mm, args.height_mm))
+
+    img = lbl.image()
+    if args.out is None:
+        img.show()
+    else:
+        img.save(args.out)
 
 def main():
     parser = argparse.ArgumentParser(
@@ -47,6 +57,15 @@ def main():
                                           help='Look up a tag in the database')
     lookup_parser.add_argument('tag', help='Tag ID')
     lookup_parser.set_defaults(func=lookup)
+
+    label_parser = subparsers.add_parser('label', add_help=False,
+                                          help='Generate a label image')
+    label_parser.add_argument('--dpi', help='Image DPI', type=int, default=300)
+    label_parser.add_argument('-w', '--width_mm', help='Label width (mm)', type=int, default=89)
+    label_parser.add_argument('-h', '--height_mm', help='Label height (mm)', type=int, default=36)
+    label_parser.add_argument('--out', help='Output filename (default: preview)', default=None)
+    label_parser.add_argument('lines', help='Text lines to put on label', nargs='*')
+    label_parser.set_defaults(func=label)
 
     args = parser.parse_args()
 
