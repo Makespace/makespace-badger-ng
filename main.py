@@ -4,22 +4,46 @@ from db import Database
 from label import Label
 import argparse
 
-def enrol(db, args):
+def open_db(args):
+    if not args.init:
+        # Check if the DB file exists
+        try:
+            db = Database(f'file:{args.database}?mode=ro')
+            db.close()
+        except Exception as e:
+            raise
+
+    db = Database(args.database)
+    if args.init:
+        try:
+            db.initialise()
+        except Exception as e:
+            raise
+
+    return db
+
+def enrol(args):
+    db = open_db(args)
+
     tag = bytes(args.tag, 'utf-8')
     print(f'Enrolling tag: {tag}, name: {args.name}, contact: {args.contact}')
     db.insert(tag, args.name, args.contact)
 
-def update(db, args):
+def update(args):
+    db = open_db(args)
+
     tag = bytes(args.tag, 'utf-8')
     print(f'Updating tag: {tag}, name: {args.name}, contact: {args.contact}')
     db.update(tag, args.name, args.contact)
 
-def lookup(db, args):
+def lookup(args):
+    db = open_db(args)
+
     tag = bytes(args.tag, 'utf-8')
     name, contact = db.lookup(tag)
     print(f'Lookup tag:{tag}, name:{name}, contact:{contact}')
 
-def label(db, args):
+def label(args):
     lbl = Label(args.lines, args.dpi, (args.width_mm, args.height_mm))
 
     img = lbl.image()
@@ -32,10 +56,13 @@ def main():
     parser = argparse.ArgumentParser(
                         prog='badger-ng',
                         description='Makespace Badger')
-    parser.add_argument('--init', action='store_true')
-    parser.add_argument('-d', '--database', help='sqlite3 database file', required=True)
 
     subparsers = parser.add_subparsers(title="Sub-commands")
+
+    # Command arguments for db commands
+    db_cmd_parser = argparse.ArgumentParser(description="parent parser for db commands", add_help = False)
+    db_cmd_parser.add_argument('--init', action='store_true')
+    db_cmd_parser.add_argument('-d', '--database', help='sqlite3 database file', required=True)
 
     # Common arguments for tag handling commands
     tag_cmd_parser = argparse.ArgumentParser(description="parent parser for tag commands", add_help = False)
@@ -44,18 +71,19 @@ def main():
     tag_cmd_parser.add_argument('contact', help='Tag owner contact')
 
     enrol_parser = subparsers.add_parser('enrol', add_help=True,
-                                         parents=[tag_cmd_parser],
+                                         parents=[db_cmd_parser, tag_cmd_parser],
                                          description='Add a tag in the database',
                                          help='Add a tag to the database')
     enrol_parser.set_defaults(func=enrol)
 
     update_parser = subparsers.add_parser('update', add_help=True,
-                                          parents=[tag_cmd_parser],
+                                          parents=[db_cmd_parser, tag_cmd_parser],
                                           description='Update a tag in the database',
                                           help='Update a tag in the database')
     update_parser.set_defaults(func=update)
 
     lookup_parser = subparsers.add_parser('lookup', add_help=True,
+                                          parents=[db_cmd_parser],
                                           description='Look up a tag in the database',
                                           help='Look up a tag in the database')
     lookup_parser.add_argument('tag', help='Tag ID')
@@ -73,29 +101,12 @@ def main():
 
     args = parser.parse_args()
 
-    if not args.init:
-        # Check if the DB file exists
-        try:
-            db = Database(f'file:{args.database}?mode=ro')
-            db.close()
-        except Exception as e:
-            print("Error:", e)
-            print("If you need to create a new one, use --init")
-            exit(1)
-
-    db = Database(args.database)
-    if args.init:
-        try:
-            db.initialise()
-        except Exception as e:
-            print("Error:", e)
-            print("Perhaps the database is already initialised")
-            exit(1)
-
     try:
-        args.func(db, args)
+        args.func(args)
     except Exception as e:
-        print(e)
+        print("Error:", e)
+        exit(1)
+
 
 if __name__ == "__main__":
     main()
