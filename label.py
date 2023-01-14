@@ -30,22 +30,22 @@ class Label():
         return int((mm / 25.4) * self.dpi)
 
     def __init__(self, lines, dpi=300, size_mm=(89, 36)):
-        self.lines = lines
         self.dpi = dpi
         self.res = [self.__mm_to_px(s) for s in size_mm]
         self.fonts = {}
 
-        # Make sure all entries are a list of lines
+        # Make sure all entries are a list of entries
         for i, line in enumerate(lines):
             if not isinstance(line, list):
                 lines[i] = [line]
+        self.lines = lines
 
         # Assign the appropriate maximum line percentages
         if len(self.lines) <= len(Label.__line_portions):
             portions = Label.__line_portions[len(self.lines)-1]
             self.max_line_heights = [int(portions[i] * self.res[1]) for i in range(len(self.lines))]
         else:
-            max_height = int(0.9 / len(self.lines) * self.res[1]) 
+            max_height = int(0.9 / len(self.lines) * self.res[1])
             self.max_line_heights = [int(max_height)]  * len(self.lines)
 
     # Work out the appropriate font size for the line, based on the allowable
