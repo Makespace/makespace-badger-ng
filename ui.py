@@ -7,24 +7,36 @@ from tkinter import font as tkfont
 
 from label import Label
 
-# TODO: Parameterise this and DPI
-aspect_ratio = 36 / 89
+class LabelPreview(tk.Frame):
+    # TODO: Parameterise this and DPI
+    __aspect_ratio = 36 / 89
+
+    def __init__(self, master=None, width=500):
+        super().__init__(master)
+        self.master = master
+        self.canvas = tk.Canvas(self, width=width, height=int(width * LabelPreview.__aspect_ratio), background='white')
+        self.canvas.pack()
+
+    def update(self, lines):
+        self.lbl = Label(lines)
+
+        img = self.lbl.image()
+        img = img.resize((self.canvas.winfo_reqwidth(), self.canvas.winfo_reqheight()))
+        self.bmp = ImageTk.BitmapImage(img, foreground='white')
+        self.canvas.create_rectangle(0, 0, self.canvas.winfo_reqwidth(), self.canvas.winfo_reqheight(), fill='black')
+        self.canvas.create_image(0, 0, image=self.bmp, anchor="nw")
+
+    def image(self):
+        return self.lbl.image()
 
 class GeneralLabelUI(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.master = master
-        self.pack()
         self.create_widgets()
 
     def update_preview(self, lines):
-        lbl = Label(lines)
-        img = lbl.image()
-        img = img.resize((self.preview.winfo_reqwidth(), self.preview.winfo_reqheight()))
-
-        self.bmp = ImageTk.BitmapImage(img, foreground='white')
-        self.preview.create_rectangle(0, 0, self.preview.winfo_reqwidth(), self.preview.winfo_reqheight(), fill='black')
-        self.preview.create_image(0, 0, image=self.bmp, anchor="nw")
+        self.preview.update(lines)
 
     def get_lines(self):
         # Text always adds an invisible trailing newline, so remove that
@@ -41,9 +53,7 @@ class GeneralLabelUI(tk.Frame):
         self.textbox.edit_modified(False)
 
     def __print(self):
-        lines = self.get_lines()
-        lbl = Label(lines)
-        img = lbl.image()
+        img = self.preview.image()
         img.show()
 
     def create_widgets(self):
@@ -77,7 +87,7 @@ class GeneralLabelUI(tk.Frame):
         self.preview_lbl.grid(column = 0, row = row, sticky='w', pady=[20, 0])
         row +=1
 
-        self.preview = tk.Canvas(self, width=500, height=int(500 * aspect_ratio), background='white')
+        self.preview = LabelPreview(self, 500)
         self.preview.grid(column = 0, row = row, pady=[0, 20])
         row += 1
 
