@@ -63,6 +63,7 @@ def reader(args):
         tag = tagreader.read_tag()
         if tag:
             print("tag:", tag.hex())
+            print("buttons:", tagreader.read_buttons())
             if db:
                 try:
                     name, comment = db.lookup(tag)
