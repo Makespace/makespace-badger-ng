@@ -35,14 +35,15 @@ class NameBadgeUI(tk.Frame):
         super().__init__(master)
         self.master = master
         self.create_widgets()
+        self.__text_modified()
 
     def update_preview(self, lines):
         self.preview.update(lines)
 
     def get_lines(self):
         # Text always adds an invisible trailing newline, so remove that
-        name_text = self.namebox.get('1.0', 'end')[:-1]
-        comment_text = self.cbox.get('1.0', 'end')[:-1]
+        name_text = self.namevar.get()
+        comment_text = self.commentvar.get()
         lines = []
         if len(name_text) > 0:
             lines.append(name_text)
@@ -54,10 +55,9 @@ class NameBadgeUI(tk.Frame):
 
         return lines
 
-    def __text_modified(self, event):
+    def __text_modified(self, *args):
         lines = self.get_lines()
         self.update_preview(lines)
-        event.widget.edit_modified(False)
 
     def __print(self):
         img = self.preview.image()
@@ -71,8 +71,8 @@ class NameBadgeUI(tk.Frame):
         self.namebox_lbl = tk.Label(self, text="Name:")
         self.namebox_lbl.grid(column = 0, row = row, sticky='w')
 
-        self.namebox = tk.Text(self, width=32, height=1, wrap="none", font=('Arial'))
-        self.namebox.insert('1.0', "Your Name")
+        self.namevar = tk.StringVar(self, "Your Name")
+        self.namebox = ttk.Entry(self, textvariable=self.namevar)
         self.namebox.grid(column = 1, row = row, sticky = 'nwes')
         row += 1
 
@@ -80,9 +80,9 @@ class NameBadgeUI(tk.Frame):
         self.cbox_lbl = tk.Label(self, text="Comment:")
         self.cbox_lbl.grid(column = 0, row = row, sticky='w')
 
-        self.cbox = tk.Text(self, width=32, height=1, wrap="none", font=('Arial'))
-        self.cbox.insert('1.0', "Your comment")
-        self.cbox.grid(column = 1, row = row, sticky = 'nwes')
+        self.commentvar = tk.StringVar(self, "Your Comment")
+        self.commentbox = ttk.Entry(self, textvariable=self.commentvar)
+        self.commentbox.grid(column = 1, row = row, sticky = 'nwes')
         row += 1
 
         # Separator
@@ -104,8 +104,8 @@ class NameBadgeUI(tk.Frame):
         self.print.grid(column = 0, row = row, columnspan=2, ipady=10, sticky='nsew')
         row += 1
 
-        self.namebox.bind('<<Modified>>', self.__text_modified)
-        self.cbox.bind('<<Modified>>', self.__text_modified)
+        self.namevar.trace_add("write", self.__text_modified)
+        self.commentvar.trace_add("write", self.__text_modified)
 
 class GeneralLabelUI(tk.Frame):
     def __init__(self, master=None):
