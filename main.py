@@ -49,13 +49,23 @@ def lookup(args):
 def reader(args):
     tagreader = TagReader(args.port)
 
+    db = None
+    if args.database:
+        db = Database(args.database)
+
     now = datetime.datetime.now()
     end = now + datetime.timedelta(seconds = args.timeout)
     while True:
         time.sleep(0.1)
         tag = tagreader.read_tag()
         if tag:
-            print("tag:", tag)
+            print("tag:", tag.hex())
+            if db:
+                try:
+                    name, comment = db.lookup(tag)
+                    print(f"name: {name}\ncomment: {comment}")
+                except ValueError:
+                    print("Not found in database")
             if not args.loop:
                 break
 
@@ -125,6 +135,7 @@ def main():
     reader_parser.add_argument('--port', help='Serial port for the tag reader', default='/dev/ttyUSB0')
     reader_parser.add_argument('--timeout', help='Timeout before giving up (seconds)', type=int, default=5)
     reader_parser.add_argument('--loop', help='Loop reading, otherwise exit after first read', action='store_true')
+    reader_parser.add_argument('-d', '--database', help='sqlite3 database file')
     reader_parser.set_defaults(func=reader)
 
     args = parser.parse_args()
