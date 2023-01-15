@@ -65,18 +65,19 @@ class BadgerApp(ttk.Frame):
         if not self.tagreader:
             return
 
+        # Always reset the UI pages
+        self.namebadge_ui.reset()
+        self.trovelabel_ui.reset()
+        self.general_ui.reset()
+        self.db_ui.reset()
+
         tag = self.tagreader.read_tag()
         if tag and tag == self.wait_for_tag_gone:
             buttons = self.tagreader.read_buttons()
-            print("Tag:", tag.hex())
-            print("Buttons:", buttons)
+            print(f"tag: {tag.hex()}, buttons: {buttons}")
 
             # Special case the "General" tag
             if tag.hex() == "4777701c":
-                self.general_ui.reset()
-                self.namebadge_ui.reset()
-                self.trovelabel_ui.reset()
-                self.db_ui.reset()
                 self.nb.select(self.general_ui)
                 return
 
@@ -84,25 +85,26 @@ class BadgerApp(ttk.Frame):
             if not self.db:
                 return
 
+            # Look up tag details in database
             try:
                 name, comment = self.db.lookup(tag)
-                print(name, comment)
             except Exception as e:
                 print("Tag not in database, enrol it", e)
                 self.db_ui.populate(tag, "Your Name", "Your Comment")
                 self.nb.select(self.db_ui)
                 return
 
+            # Populate the tabs
             self.namebadge_ui.populate(name, comment)
             self.trovelabel_ui.populate(name, comment)
-            # Clear out the db_ui always, so someone else's tag isn't loaded
-            self.db_ui.reset()
 
-            if buttons == 0:
-                self.nb.select(self.namebadge_ui)
-                self.namebadge_ui.event_generate("<<Print_Label>>")
-            elif buttons == 1:
+            # If the UI is "on" the Edit page, stay on the Edit page by default,
+            # otherwise the "Scan a Tag" UI labelling is very confusing
+            if (buttons == 0 and self.nb.tab(self.nb.select(), "text") == "Edit Tag") or (buttons == 1):
                 self.db_ui.populate(tag, name, comment)
                 self.nb.select(self.db_ui)
-            elif buttons == 2:
+            elif buttons == 0: # Print name badge
+                self.nb.select(self.namebadge_ui)
+                self.namebadge_ui.event_generate("<<Print_Label>>")
+            elif buttons == 2: # Show storage tab
                 self.nb.select(self.trovelabel_ui)
