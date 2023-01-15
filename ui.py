@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import datetime
 from PIL import ImageTk, ImageOps
 import tkinter as tk
 from tkinter import ttk
@@ -41,7 +42,6 @@ class NameBadgeUI(tk.Frame):
         self.preview.update(lines)
 
     def get_lines(self):
-        # Text always adds an invisible trailing newline, so remove that
         name_text = self.namevar.get()
         comment_text = self.commentvar.get()
         lines = []
@@ -76,7 +76,7 @@ class NameBadgeUI(tk.Frame):
         self.namebox.grid(column = 1, row = row, sticky = 'nwes')
         row += 1
 
-        # Contact Box
+        # Comment Box
         self.cbox_lbl = tk.Label(self, text="Comment:")
         self.cbox_lbl.grid(column = 0, row = row, sticky='w')
 
@@ -106,6 +106,119 @@ class NameBadgeUI(tk.Frame):
 
         self.namevar.trace_add("write", self.__text_modified)
         self.commentvar.trace_add("write", self.__text_modified)
+
+class TroveLabelUI(tk.Frame):
+    def __init__(self, master=None):
+        super().__init__(master)
+        self.master = master
+        self.create_widgets()
+        self.__set_out_to_days(30)
+        self.__text_modified()
+
+    def update_preview(self, lines):
+        self.preview.update(lines)
+
+    def get_lines(self):
+        name_text = self.namevar.get()
+        contact_text = self.contactvar.get()
+        out_text = self.outvar.get()
+
+        today = datetime.date.today()
+        in_text = f"Date in: {today.isoformat()}"
+        out_text = "Use by: " + out_text
+
+        return [
+                [name_text],
+                [contact_text],
+                [in_text, out_text],
+        ]
+
+    def __set_out_to_days(self, days):
+        today = datetime.date.today()
+        delta = datetime.timedelta(days=days)
+        out = today + delta
+        self.outvar.set(out.isoformat())
+
+    def __text_modified(self, *args):
+        name_text = self.namevar.get()
+        contact_text = self.contactvar.get()
+        out_text = self.outvar.get()
+
+        if len(name_text) == 0 or len(contact_text) == 0 or len(out_text) == 0:
+                self.print['state'] = 'disabled'
+        else:
+                self.print['state'] = 'normal'
+
+        lines = self.get_lines()
+        self.update_preview(lines)
+
+    def __print(self):
+        img = self.preview.image()
+        img.show()
+
+    def create_widgets(self):
+        row = 0
+        self.grid(padx=20, pady=20)
+
+        # Name Box
+        self.namebox_lbl = tk.Label(self, text="Name:")
+        self.namebox_lbl.grid(column = 0, row = row, sticky='w')
+
+        self.namevar = tk.StringVar(self, "Your Name")
+        self.namebox = ttk.Entry(self, textvariable=self.namevar)
+        self.namebox.grid(column = 1, row = row, columnspan=2, sticky = 'nwes')
+        row += 1
+
+        # Contact Box
+        self.cbox_lbl = tk.Label(self, text="Contact:")
+        self.cbox_lbl.grid(column = 0, row = row, sticky='w')
+
+        self.contactvar = tk.StringVar(self, "Your Contact Info")
+        self.contactbox = ttk.Entry(self, textvariable=self.contactvar)
+        self.contactbox.grid(column = 1, row = row, columnspan=2, sticky = 'nwes')
+        row += 1
+
+        # Date out
+        self.outbox_lbl = tk.Label(self, text="Use by:")
+        self.outbox_lbl.grid(column = 0, row = row, sticky='w')
+
+        self.outvar = tk.StringVar(self, "1970-01-01")
+        self.outbox = ttk.Entry(self, textvariable=self.outvar)
+        self.outbox.grid(column = 1, row = row, columnspan=2, sticky = 'nwes')
+        row += 1
+
+        # Date buttons
+        self.monthbutton1 = ttk.Button(self, text="1 month",
+                                       command=lambda: self.__set_out_to_days(30))
+        self.monthbutton1.grid(column = 1, row = row, sticky = 'nwes')
+
+        self.monthbutton3 = ttk.Button(self, text="3 months",
+                                       command=lambda: self.__set_out_to_days(90))
+        self.monthbutton3.grid(column = 2, row = row, sticky = 'nwes')
+        row += 1
+
+        # Separator
+        self.sep = ttk.Separator(self, orient='horizontal')
+        self.sep.grid(column = 0, row = row, columnspan=3, sticky='we', pady=20)
+        row +=1
+
+        # Label preview
+        self.preview_lbl = tk.Label(self, text="Label preview:")
+        self.preview_lbl.grid(column = 0, row = row, sticky='w')
+        row +=1
+
+        self.preview = LabelPreview(self, 500)
+        self.preview.grid(column = 0, row = row, columnspan=3)
+        row += 1
+
+        # Print button
+        self.print = tk.Button(self, text='Print', font=('Arial', 24), command=self.__print)
+        self.print.grid(column = 0, row = row, columnspan=3, ipady=10, sticky='nsew')
+        row += 1
+
+        self.namevar.trace_add("write", self.__text_modified)
+        self.contactvar.trace_add("write", self.__text_modified)
+        self.outvar.trace_add("write", self.__text_modified)
 
 class GeneralLabelUI(tk.Frame):
     def __init__(self, master=None):
@@ -184,7 +297,7 @@ class GeneralLabelUI(tk.Frame):
 
 def main():
     root = tk.Tk()
-    app = NameBadgeUI(master=root)
+    app = TroveLabelUI(master=root)
     root.resizable(False,False)
     app.mainloop()
 
