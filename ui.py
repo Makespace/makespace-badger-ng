@@ -107,10 +107,18 @@ class NameBadgeUI(tk.Frame):
         self.namevar.trace_add("write", self.__text_modified)
         self.commentvar.trace_add("write", self.__text_modified)
 
+    def populate(self, name, comment):
+        self.namevar.set(name)
+        self.commentvar.set(comment)
+
+    def reset(self):
+        self.populate("Your Name", "Your Comment")
+
 class DatabaseUI(tk.Frame):
-    def __init__(self, master=None):
+    def __init__(self, master=None, db=None):
         super().__init__(master)
         self.master = master
+        self.db = db
         self.create_widgets()
         self.__text_modified()
 
@@ -188,12 +196,56 @@ class DatabaseUI(tk.Frame):
         self.print = tk.Button(self, text='Print', font=('Arial', 24), state='disabled')
         self.print.grid(column = 0, row = row, columnspan=1, ipady=10, sticky='nsew')
 
-        self.save = tk.Button(self, text='Save', font=('Arial', 24), state='disabled')
+        self.save = tk.Button(self, text='Save', font=('Arial', 24), state='disabled',
+                              command=self.do_save)
         self.save.grid(column = 1, row = row, columnspan=1, ipady=10, sticky='nsew')
         row += 1
 
         self.namevar.trace_add("write", self.__text_modified)
         self.commentvar.trace_add("write", self.__text_modified)
+
+    def do_save(self):
+        if not self.db:
+            # Can't do anything without a database
+            self.reset()
+            return
+
+        tag = bytes.fromhex(self.tagvar.get())
+        name = self.namevar.get()
+        comment = self.commentvar.get()
+
+        try:
+            self.db.update(tag, name, comment)
+        except:
+            self.db.insert(tag, name, comment)
+
+        self.tagvar.set("Scan a tag")
+        self.namebox['state'] = 'disabled'
+        self.commentbox['state'] = 'disabled'
+        self.save['state'] = 'disabled'
+
+    def populate(self, tag, name="Your Name", comment="Your Comment"):
+        if not self.db:
+            # Can't do anything without a database
+            self.reset()
+            return
+
+        self.tagvar.set(tag.hex())
+        self.namevar.set(name)
+        self.commentvar.set(comment)
+        self.namebox['state'] = 'enabled'
+        self.commentbox['state'] = 'enabled'
+        self.print['state'] = 'normal'
+        self.save['state'] = 'normal'
+
+    def reset(self):
+        self.tagvar.set("Scan a Tag")
+        self.namevar.set("Scan a Tag")
+        self.commentvar.set("To update it")
+        self.namebox['state'] = 'disabled'
+        self.commentbox['state'] = 'disabled'
+        self.print['state'] = 'disabled'
+        self.save['state'] = 'disabled'
 
 class TroveLabelUI(tk.Frame):
     def __init__(self, master=None):
@@ -308,6 +360,15 @@ class TroveLabelUI(tk.Frame):
         self.contactvar.trace_add("write", self.__text_modified)
         self.outvar.trace_add("write", self.__text_modified)
 
+    def populate(self, name, comment):
+        self.namevar.set(name)
+        self.contactvar.set(comment)
+        self.__set_out_to_days(30)
+        self.__text_modified()
+
+    def reset(self):
+        self.populate("Your Name", "Your Contact Info")
+
 class GeneralLabelUI(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
@@ -382,6 +443,9 @@ class GeneralLabelUI(tk.Frame):
 
         self.textbox.bind('<<Modified>>', self.__text_modified)
 
+    def reset(self):
+        self.textbox.delete("1.0", "end")
+        self.textbox.insert('1.0', "Create a Label\nWith all the content you want\nMaybe a Haiku")
 
 def main():
     root = tk.Tk()

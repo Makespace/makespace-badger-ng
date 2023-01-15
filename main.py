@@ -152,6 +152,7 @@ def main():
                                           description='Run the badger UI',
                                           help='Run the badger UI')
     ui_parser.add_argument('--port', help='Serial port for the tag reader', default='/dev/ttyUSB0')
+    ui_parser.add_argument('-d', '--database', help='sqlite3 database file')
     ui_parser.set_defaults(func=run_ui)
 
     args = parser.parse_args()
