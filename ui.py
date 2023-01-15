@@ -297,7 +297,18 @@ class GeneralLabelUI(tk.Frame):
 
 def main():
     root = tk.Tk()
-    app = TroveLabelUI(master=root)
+    nb = ttk.Notebook(root)
+    nb.pack()
+
+    namebadge_ui = NameBadgeUI(nb)
+    trovelabel_ui = TroveLabelUI(nb)
+    general_ui = GeneralLabelUI(nb)
+
+    nb.add(namebadge_ui, text="Name Badge")
+    nb.add(trovelabel_ui, text="Storage Label")
+    nb.add(general_ui, text="General Label")
+
+    app = root
     root.resizable(False,False)
     app.mainloop()
 
