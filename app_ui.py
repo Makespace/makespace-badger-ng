@@ -5,6 +5,8 @@ from tkinter import ttk
 from db import Database
 from ui import NameBadgeUI, TroveLabelUI, GeneralLabelUI, DatabaseUI
 from tagreader import TagReader
+from printer import DisplayPrinter, RotatePrinter
+from printer_d450 import PrinterDymo450
 
 class BadgerApp(ttk.Frame):
     def __init__(self, master=None, args=None):
@@ -27,16 +29,23 @@ class BadgerApp(ttk.Frame):
         else:
             self.db = None
 
+        if args.printer == 'display':
+            self.printer = DisplayPrinter()
+        elif args.printer == 'display_r90':
+            self.printer = RotatePrinter(DisplayPrinter())
+        elif args.printer == 'd450':
+            self.printer = RotatePrinter(PrinterDymo450())
+
         self.nb = ttk.Notebook(self)
         self.nb.pack()
 
         self.event_add("<<Tag_Present>>", "None")
         self.bind('<<Tag_Present>>', self.handle_tag)
 
-        self.namebadge_ui = NameBadgeUI(self.nb)
-        self.trovelabel_ui = TroveLabelUI(self.nb)
-        self.general_ui = GeneralLabelUI(self.nb)
-        self.db_ui = DatabaseUI(self.nb, self.db)
+        self.namebadge_ui = NameBadgeUI(self.nb, self.printer)
+        self.trovelabel_ui = TroveLabelUI(self.nb, self.printer)
+        self.general_ui = GeneralLabelUI(self.nb, self.printer)
+        self.db_ui = DatabaseUI(self.nb, self.db, self.printer)
 
         self.nb.add(self.namebadge_ui, text="Name Badge")
         self.nb.add(self.trovelabel_ui, text="Storage Label")

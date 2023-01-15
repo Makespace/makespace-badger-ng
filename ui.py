@@ -7,6 +7,7 @@ from tkinter import ttk
 from tkinter import font as tkfont
 
 from label import Label
+from printer import DisplayPrinter
 
 class LabelPreview(tk.Frame):
     # TODO: Parameterise this and DPI
@@ -32,9 +33,10 @@ class LabelPreview(tk.Frame):
         return self.lbl.image()
 
 class NameBadgeUI(tk.Frame):
-    def __init__(self, master=None):
+    def __init__(self, master=None, printer=DisplayPrinter()):
         super().__init__(master)
         self.master = master
+        self.printer = printer
         self.create_widgets()
         self.__text_modified()
 
@@ -68,7 +70,7 @@ class NameBadgeUI(tk.Frame):
     def __print(self):
         print("Printing...")
         img = self.preview.image()
-        img.show()
+        self.printer.print_image(img)
 
     def create_widgets(self):
         row = 0
@@ -122,9 +124,10 @@ class NameBadgeUI(tk.Frame):
         self.populate("Your Name", "Your Comment")
 
 class DatabaseUI(tk.Frame):
-    def __init__(self, master=None, db=None):
+    def __init__(self, master=None, db=None, printer=DisplayPrinter()):
         super().__init__(master)
         self.master = master
+        self.printer = printer
         self.db = db
         self.create_widgets()
         self.__text_modified()
@@ -152,7 +155,7 @@ class DatabaseUI(tk.Frame):
 
     def __print(self):
         img = self.preview.image()
-        img.show()
+        self.printer.print_image(img)
 
     def create_widgets(self):
         row = 0
@@ -255,9 +258,10 @@ class DatabaseUI(tk.Frame):
         self.save['state'] = 'disabled'
 
 class TroveLabelUI(tk.Frame):
-    def __init__(self, master=None):
+    def __init__(self, master=None, printer=DisplayPrinter()):
         super().__init__(master)
         self.master = master
+        self.printer = printer
         self.create_widgets()
         self.__set_out_to_days(30)
         self.__text_modified()
@@ -301,7 +305,7 @@ class TroveLabelUI(tk.Frame):
 
     def __print(self):
         img = self.preview.image()
-        img.show()
+        self.printer.print_image(img)
 
     def create_widgets(self):
         row = 0
@@ -377,9 +381,10 @@ class TroveLabelUI(tk.Frame):
         self.populate("Your Name", "Your Contact Info")
 
 class GeneralLabelUI(tk.Frame):
-    def __init__(self, master=None):
+    def __init__(self, master=None, printer=DisplayPrinter()):
         super().__init__(master)
         self.master = master
+        self.printer = printer
         self.create_widgets()
 
     def update_preview(self, lines):
@@ -401,7 +406,7 @@ class GeneralLabelUI(tk.Frame):
 
     def __print(self):
         img = self.preview.image()
-        img.show()
+        self.printer.print_image(img)
 
     def create_widgets(self):
         row = 0
