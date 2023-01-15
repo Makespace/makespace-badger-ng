@@ -7,7 +7,7 @@ class PrinterDymo450():
     def __init__(self):
         dev = usb.core.find(idVendor=0x0922, idProduct=0x0020)
         if dev is None:
-            raise ValueError('Device not found')
+            raise ValueError('PrinterDymo450: device not found')
         self.dev = dev
 
         dev.set_configuration()
