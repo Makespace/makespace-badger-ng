@@ -16,4 +16,4 @@ class TagReader():
         tag = self.ser.read(4)
         if len(tag) != 4:
             return None
-        return tag.hex()
+        return tag

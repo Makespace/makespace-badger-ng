@@ -12,7 +12,7 @@ class Database():
 
     def initialise(self):
         cur = self.conn.cursor()
-        cur.execute("CREATE TABLE Tags(Tag INT UNIQUE, Name TEXT, Comment TEXT)")
+        cur.execute("CREATE TABLE Tags(Tag BLOB UNIQUE, Name TEXT, Comment TEXT)")
         self.conn.commit()
 
     def lookup(self, tag):

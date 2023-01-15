@@ -28,23 +28,23 @@ def open_db(args):
 def enrol(args):
     db = open_db(args)
 
-    tag = bytes(args.tag, 'utf-8')
-    print(f'Enrolling tag: {tag}, name: {args.name}, contact: {args.contact}')
+    tag = bytes.fromhex(args.tag)
+    print(f'Enrolling tag: {tag.hex()}, name: {args.name}, contact: {args.contact}')
     db.insert(tag, args.name, args.contact)
 
 def update(args):
     db = open_db(args)
 
-    tag = bytes(args.tag, 'utf-8')
-    print(f'Updating tag: {tag}, name: {args.name}, contact: {args.contact}')
+    tag = bytes.fromhex(args.tag)
+    print(f'Updating tag: {tag.hex()}, name: {args.name}, contact: {args.contact}')
     db.update(tag, args.name, args.contact)
 
 def lookup(args):
     db = open_db(args)
 
-    tag = bytes(args.tag, 'utf-8')
+    tag = bytes.fromhex(args.tag)
     name, contact = db.lookup(tag)
-    print(f'Lookup tag:{tag}, name:{name}, contact:{contact}')
+    print(f'Lookup tag:{tag.hex()}, name:{name}, contact:{contact}')
 
 def reader(args):
     tagreader = TagReader(args.port)
