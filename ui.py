@@ -16,6 +16,7 @@ class LabelPreview(tk.Frame):
         self.master = master
         self.canvas = tk.Canvas(self, width=width, height=int(width * LabelPreview.__aspect_ratio), background='white')
         self.canvas.pack()
+        self.update([''])
 
     def update(self, lines):
         self.lbl = Label(lines)
@@ -28,6 +29,78 @@ class LabelPreview(tk.Frame):
 
     def image(self):
         return self.lbl.image()
+
+class NameBadgeUI(tk.Frame):
+    def __init__(self, master=None):
+        super().__init__(master)
+        self.master = master
+        self.create_widgets()
+
+    def update_preview(self, lines):
+        self.preview.update(lines)
+
+    def get_lines(self):
+        # Text always adds an invisible trailing newline, so remove that
+        name_text = self.namebox.get('1.0', 'end')[:-1]
+        comment_text = self.cbox.get('1.0', 'end')[:-1]
+        lines = []
+        if len(name_text) > 0:
+            lines.append(name_text)
+        if len(comment_text) > 0:
+            lines.append(comment_text)
+
+        if len(lines) == 0:
+            return [' ']
+
+        return lines
+
+    def __text_modified(self, event):
+        lines = self.get_lines()
+        self.update_preview(lines)
+        event.widget.edit_modified(False)
+
+    def __print(self):
+        img = self.preview.image()
+        img.show()
+
+    def create_widgets(self):
+        row = 0
+        self.grid(padx=20, pady=20)
+
+        # Name Box
+        self.namebox_lbl = tk.Label(self, text="Name:")
+        self.namebox_lbl.grid(column = 0, row = row, sticky='w')
+
+        self.namebox = tk.Text(self, width=32, height=1, wrap="none", font=('Arial'))
+        self.namebox.insert('1.0', "Your Name")
+        self.namebox.grid(column = 1, row = row, sticky = 'nwes')
+        row += 1
+
+        # Contact Box
+        self.cbox_lbl = tk.Label(self, text="Comment/contact:")
+        self.cbox_lbl.grid(column = 0, row = row, sticky='w')
+
+        self.cbox = tk.Text(self, width=32, height=1, wrap="none", font=('Arial'))
+        self.cbox.insert('1.0', "Your contact / comment")
+        self.cbox.grid(column = 1, row = row, sticky = 'nwes')
+        row += 1
+
+        # Label preview
+        self.preview_lbl = tk.Label(self, text="Label preview:")
+        self.preview_lbl.grid(column = 0, row = row, sticky='w', pady=[20, 0])
+        row +=1
+
+        self.preview = LabelPreview(self, 500)
+        self.preview.grid(column = 0, row = row, columnspan=2, pady=[0, 20])
+        row += 1
+
+        # Print button
+        self.print = tk.Button(self, text='Print', font=('Arial', 24), command=self.__print)
+        self.print.grid(column = 0, row = row, columnspan=2, ipady=10, sticky='nsew')
+        row += 1
+
+        self.namebox.bind('<<Modified>>', self.__text_modified)
+        self.cbox.bind('<<Modified>>', self.__text_modified)
 
 class GeneralLabelUI(tk.Frame):
     def __init__(self, master=None):
@@ -101,7 +174,7 @@ class GeneralLabelUI(tk.Frame):
 
 def main():
     root = tk.Tk()
-    app = GeneralLabelUI(master=root)
+    app = NameBadgeUI(master=root)
     root.resizable(False,False)
     app.mainloop()
 
