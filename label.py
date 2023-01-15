@@ -32,7 +32,6 @@ class Label():
     def __init__(self, lines, dpi=300, size_mm=(89, 36)):
         self.dpi = dpi
         self.res = [self.__mm_to_px(s) for s in size_mm]
-        self.fonts = {}
 
         # Make sure all entries are a list of entries
         for i, line in enumerate(lines):
@@ -48,6 +47,9 @@ class Label():
             max_height = int(0.9 / len(self.lines) * self.res[1])
             self.max_line_heights = [int(max_height)]  * len(self.lines)
 
+        size = self.max_line_heights[0]
+        self.base_font = ImageFont.truetype(font="Arial.ttf", size=size)
+
     # Work out the appropriate font size for the line, based on the allowable
     # max_line_height, and the width of the image
     def __choose_line_size(self, idx):
@@ -57,12 +59,12 @@ class Label():
         max_elem_width = self.res[0] // len(line)
 
         while True:
-            # Load font at max line height
-            font = self.fonts.get(size)
-            if font is None:
-                #TODO: Could use font_variant to save re-loading
-                font = ImageFont.truetype(font="Arial.ttf", size=size)
-                self.fonts[size] = font
+            # FIXME: There used to be a font cache, but it grew too large
+            # and then font loading would fail. I thought "font_variant" would
+            # fix that, but it doesn't.
+            # There should be a way to do smarter search/caching - maybe a
+            # binary search on size
+            font = self.base_font.font_variant(size=size)
 
             # left, top, right, bottom
             gap_bbox = font.getbbox('  ')
@@ -81,6 +83,7 @@ class Label():
                 if (bbox[2] - bbox[0]) > max_elem_width:
                     ok = False
                     size -= 1
+                    del font
                     break
 
             if ok:
