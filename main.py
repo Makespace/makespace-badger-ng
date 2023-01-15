@@ -2,7 +2,10 @@
 
 from db import Database
 from label import Label
+from tagreader import TagReader
 import argparse
+import datetime
+import time
 
 def open_db(args):
     if not args.init:
@@ -42,6 +45,23 @@ def lookup(args):
     tag = bytes(args.tag, 'utf-8')
     name, contact = db.lookup(tag)
     print(f'Lookup tag:{tag}, name:{name}, contact:{contact}')
+
+def reader(args):
+    tagreader = TagReader(args.port)
+
+    now = datetime.datetime.now()
+    end = now + datetime.timedelta(seconds = args.timeout)
+    while True:
+        time.sleep(0.1)
+        tag = tagreader.read_tag()
+        if tag:
+            print("tag:", tag)
+            if not args.loop:
+                break
+
+        if datetime.datetime.now() > end:
+            print("Timeout reached.")
+            break
 
 def label(args):
     lbl = Label(args.lines, args.dpi, (args.width_mm, args.height_mm))
@@ -98,6 +118,14 @@ def main():
     label_parser.add_argument('--out', help='Output filename (default: preview)', default=None)
     label_parser.add_argument('lines', help='Text lines to put on label', nargs='*')
     label_parser.set_defaults(func=label)
+
+    reader_parser = subparsers.add_parser('reader', add_help=True,
+                                          description='Read a tag',
+                                          help='Read a tag')
+    reader_parser.add_argument('--port', help='Serial port for the tag reader', default='/dev/ttyUSB0')
+    reader_parser.add_argument('--timeout', help='Timeout before giving up (seconds)', type=int, default=5)
+    reader_parser.add_argument('--loop', help='Loop reading, otherwise exit after first read', action='store_true')
+    reader_parser.set_defaults(func=reader)
 
     args = parser.parse_args()
 
