@@ -107,6 +107,94 @@ class NameBadgeUI(tk.Frame):
         self.namevar.trace_add("write", self.__text_modified)
         self.commentvar.trace_add("write", self.__text_modified)
 
+class DatabaseUI(tk.Frame):
+    def __init__(self, master=None):
+        super().__init__(master)
+        self.master = master
+        self.create_widgets()
+        self.__text_modified()
+
+    def update_preview(self, lines):
+        self.preview.update(lines)
+
+    def get_lines(self):
+        name_text = self.namevar.get()
+        comment_text = self.commentvar.get()
+        lines = []
+        if len(name_text) > 0:
+            lines.append(name_text)
+        if len(comment_text) > 0:
+            lines.append(comment_text)
+
+        if len(lines) == 0:
+            return [' ']
+
+        return lines
+
+    def __text_modified(self, *args):
+        lines = self.get_lines()
+        self.update_preview(lines)
+
+    def __print(self):
+        img = self.preview.image()
+        img.show()
+
+    def create_widgets(self):
+        row = 0
+        self.grid(padx=20, pady=20)
+
+        # Tag labels
+        self.tagbox_lbl = tk.Label(self, text="Editing tag:")
+        self.tagbox_lbl.grid(column = 0, row = row, sticky='w')
+
+        self.tagvar = tk.StringVar(self, "Scan a Tag")
+        self.tagbox = ttk.Entry(self, textvariable=self.tagvar, state='disabled')
+        self.tagbox.grid(column = 1, row = row, sticky = 'nwes')
+        row += 1
+
+        # Name Box
+        self.namebox_lbl = tk.Label(self, text="Name:")
+        self.namebox_lbl.grid(column = 0, row = row, sticky='w')
+
+        self.namevar = tk.StringVar(self, "Scan a Tag")
+        self.namebox = ttk.Entry(self, textvariable=self.namevar, state='disabled')
+        self.namebox.grid(column = 1, row = row, sticky = 'nwes')
+        row += 1
+
+        # Comment Box
+        self.cbox_lbl = tk.Label(self, text="Comment:")
+        self.cbox_lbl.grid(column = 0, row = row, sticky='w')
+
+        self.commentvar = tk.StringVar(self, "To update it")
+        self.commentbox = ttk.Entry(self, textvariable=self.commentvar, state='disabled')
+        self.commentbox.grid(column = 1, row = row, sticky = 'nwes')
+        row += 1
+
+        # Separator
+        self.sep = ttk.Separator(self, orient='horizontal')
+        self.sep.grid(column = 0, row = row, columnspan=2, sticky='we', pady=20)
+        row +=1
+
+        # Label preview
+        self.preview_lbl = tk.Label(self, text="Label preview:")
+        self.preview_lbl.grid(column = 0, row = row, sticky='w')
+        row +=1
+
+        self.preview = LabelPreview(self, 500)
+        self.preview.grid(column = 0, row = row, columnspan=2)
+        row += 1
+
+        # Save / Print button
+        self.print = tk.Button(self, text='Print', font=('Arial', 24), state='disabled')
+        self.print.grid(column = 0, row = row, columnspan=1, ipady=10, sticky='nsew')
+
+        self.save = tk.Button(self, text='Save', font=('Arial', 24), state='disabled')
+        self.save.grid(column = 1, row = row, columnspan=1, ipady=10, sticky='nsew')
+        row += 1
+
+        self.namevar.trace_add("write", self.__text_modified)
+        self.commentvar.trace_add("write", self.__text_modified)
+
 class TroveLabelUI(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
@@ -303,10 +391,12 @@ def main():
     namebadge_ui = NameBadgeUI(nb)
     trovelabel_ui = TroveLabelUI(nb)
     general_ui = GeneralLabelUI(nb)
+    db_ui = DatabaseUI(nb)
 
     nb.add(namebadge_ui, text="Name Badge")
     nb.add(trovelabel_ui, text="Storage Label")
     nb.add(general_ui, text="General Label")
+    nb.add(db_ui, text="Edit Tag")
 
     app = root
     root.resizable(False,False)
