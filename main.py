@@ -3,9 +3,12 @@
 from db import Database
 from label import Label
 from tagreader import TagReader
+from app_ui import BadgerApp
 import argparse
 import datetime
 import time
+import tkinter as tk
+from tkinter import ttk
 
 def open_db(args):
     if not args.init:
@@ -82,6 +85,12 @@ def label(args):
     else:
         img.save(args.out)
 
+def run_ui(args):
+    root = tk.Tk()
+    root.resizable(False,False)
+    app = BadgerApp(root, args)
+    app.mainloop()
+
 def main():
     parser = argparse.ArgumentParser(
                         prog='badger-ng',
@@ -137,6 +146,12 @@ def main():
     reader_parser.add_argument('--loop', help='Loop reading, otherwise exit after first read', action='store_true')
     reader_parser.add_argument('-d', '--database', help='sqlite3 database file')
     reader_parser.set_defaults(func=reader)
+
+    ui_parser = subparsers.add_parser('ui', add_help=True,
+                                          description='Run the badger UI',
+                                          help='Run the badger UI')
+    ui_parser.add_argument('--port', help='Serial port for the tag reader', default='/dev/ttyUSB0')
+    ui_parser.set_defaults(func=run_ui)
 
     args = parser.parse_args()
 
