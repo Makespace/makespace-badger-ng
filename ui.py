@@ -38,6 +38,12 @@ class NameBadgeUI(tk.Frame):
         self.create_widgets()
         self.__text_modified()
 
+        self.event_add("<<Print_Label>>", "None")
+        self.bind('<<Print_Label>>', self.handle_print_event)
+
+    def handle_print_event(self, event):
+        self.__print()
+
     def update_preview(self, lines):
         self.preview.update(lines)
 
@@ -60,6 +66,7 @@ class NameBadgeUI(tk.Frame):
         self.update_preview(lines)
 
     def __print(self):
+        print("Printing...")
         img = self.preview.image()
         img.show()
 

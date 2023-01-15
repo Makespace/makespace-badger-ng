@@ -100,6 +100,7 @@ class BadgerApp(ttk.Frame):
 
             if buttons == 0:
                 self.nb.select(self.namebadge_ui)
+                self.namebadge_ui.event_generate("<<Print_Label>>")
             elif buttons == 1:
                 self.db_ui.populate(tag, name, comment)
                 self.nb.select(self.db_ui)
