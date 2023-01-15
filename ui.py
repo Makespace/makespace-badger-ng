@@ -77,21 +77,26 @@ class NameBadgeUI(tk.Frame):
         row += 1
 
         # Contact Box
-        self.cbox_lbl = tk.Label(self, text="Comment/contact:")
+        self.cbox_lbl = tk.Label(self, text="Comment:")
         self.cbox_lbl.grid(column = 0, row = row, sticky='w')
 
         self.cbox = tk.Text(self, width=32, height=1, wrap="none", font=('Arial'))
-        self.cbox.insert('1.0', "Your contact / comment")
+        self.cbox.insert('1.0', "Your comment")
         self.cbox.grid(column = 1, row = row, sticky = 'nwes')
         row += 1
 
+        # Separator
+        self.sep = ttk.Separator(self, orient='horizontal')
+        self.sep.grid(column = 0, row = row, columnspan=2, sticky='we', pady=20)
+        row +=1
+
         # Label preview
         self.preview_lbl = tk.Label(self, text="Label preview:")
-        self.preview_lbl.grid(column = 0, row = row, sticky='w', pady=[20, 0])
+        self.preview_lbl.grid(column = 0, row = row, sticky='w')
         row +=1
 
         self.preview = LabelPreview(self, 500)
-        self.preview.grid(column = 0, row = row, columnspan=2, pady=[0, 20])
+        self.preview.grid(column = 0, row = row, columnspan=2)
         row += 1
 
         # Print button
@@ -155,13 +160,18 @@ class GeneralLabelUI(tk.Frame):
         self.grid_columnconfigure(0, weight = 1)
         self.grid_rowconfigure(0, weight = 1)
 
+        # Separator
+        self.sep = ttk.Separator(self, orient='horizontal')
+        self.sep.grid(column = 0, row = row, sticky='we', pady=20)
+        row +=1
+
         # Label preview
         self.preview_lbl = tk.Label(self, text="Label preview:")
-        self.preview_lbl.grid(column = 0, row = row, sticky='w', pady=[20, 0])
+        self.preview_lbl.grid(column = 0, row = row, sticky='w')
         row +=1
 
         self.preview = LabelPreview(self, 500)
-        self.preview.grid(column = 0, row = row, pady=[0, 20])
+        self.preview.grid(column = 0, row = row)
         row += 1
 
         # Print button
@@ -169,7 +179,7 @@ class GeneralLabelUI(tk.Frame):
         self.print.grid(column = 0, row = row, ipady=10, sticky='nsew')
         row += 1
 
-        self.textbox.bind('<<Modified>>', self.__text_modified)  
+        self.textbox.bind('<<Modified>>', self.__text_modified)
 
 
 def main():
