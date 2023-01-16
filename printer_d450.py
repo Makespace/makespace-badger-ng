@@ -27,14 +27,21 @@ class PrinterDymo450():
                 usb.util.endpoint_direction(e.bEndpointAddress) == \
                 usb.util.ENDPOINT_IN)
 
-        assert (ep_out is not None) and (ep_in is not None)
+        assert (self.ep_out is not None) and (self.ep_in is not None)
+
+    def sync(self):
+        self.write_command(0x1b, [0x1b] * 84)
 
     def reset(self):
-        self.write_command(0x1b, [0x1b] * 84)
+        self.sync()
         self.write_command(ord('*'))
 
     def write_command(self, cmd, args=[]):
         buf = bytes([0x1b, cmd]) + bytes(args)
+        self.ep_out.write(buf)
+
+    def write_data(self, data=[]):
+        buf = bytes([0x16]) + bytes(data)
         self.ep_out.write(buf)
 
     def get_status(self):
@@ -47,7 +54,7 @@ class PrinterDymo450():
         self.write_command(ord('V'))
 
         version = self.ep_in.read(10)
-        return str(version)
+        return str(version.tobytes().decode())
 
     def form_feed(self):
         self.write_command(ord('E'))
@@ -73,11 +80,13 @@ class PrinterDymo450():
                     idx = row * image.width + col
                     v = data[idx]
                     if v == 0:
-                        b |= (1 << bit)
+                        # Scanline columns are MSB-first
+                        # Determined empricially.
+                        b |= (1 << (7 - bit))
                 line.append(b)
             packed_lines.append(line)
 
-        self.reset()
+        self.sync()
         self.write_command(ord('D'), [nbytes])
 
         nrows = image.height + 100
@@ -86,7 +95,7 @@ class PrinterDymo450():
         self.write_command(ord('L'), [n1, n2])
 
         for line in packed_lines:
-            self.write_command(0x16, line)
+            self.write_data(line)
 
         self.form_feed()
 
