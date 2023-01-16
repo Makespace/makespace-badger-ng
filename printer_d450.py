@@ -102,12 +102,22 @@ class PrinterDymo450():
 def main():
     printer = PrinterDymo450()
 
-    printer.reset()
-    print(printer.get_version())
-    print(printer.get_status())
+    printer.sync()
+
+    # Bit 1 is top-of-form
+    print("Initial, after sync:", printer.get_status())
+
     printer.form_feed()
-    #img = Image.new('1', (425, 1051), 1)
-    #printer.print_image(img)
+
+    print("After form-feed:", printer.get_status())
+
+    printer.write_command(ord('f'), [ord('1'), 200])
+
+    print("After skip 200:", printer.get_status())
+
+    printer.reset()
+
+    print("After reset:", printer.get_status())
 
 if __name__ == "__main__":
     main()
