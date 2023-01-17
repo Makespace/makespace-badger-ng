@@ -29,12 +29,16 @@ class PrinterDymo450():
 
         assert (self.ep_out is not None) and (self.ep_in is not None)
 
+    def close(self):
+        usb.util.dispose_resources(self.dev)
+        self.dev = None
+
     def sync(self):
         self.write_command(0x1b, [0x1b] * 84)
 
     def reset(self):
         self.sync()
-        self.write_command(ord('*'))
+        self.write_command(ord('@'))
 
     def write_command(self, cmd, args=[]):
         buf = bytes([0x1b, cmd]) + bytes(args)

@@ -29,7 +29,9 @@ class Label():
     def __mm_to_px(self, mm):
         return int((mm / 25.4) * self.dpi)
 
-    def __init__(self, lines, dpi=300, size_mm=(89, 36)):
+    # XXX: There seems to be an unavoidable 5mm margin on the right edge,
+    # So just scale down the label by 10mm.
+    def __init__(self, lines, dpi=300, size_mm=(89-10, 36)):
         self.dpi = dpi
         self.res = [self.__mm_to_px(s) for s in size_mm]
 

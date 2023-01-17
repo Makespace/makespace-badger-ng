@@ -10,8 +10,11 @@ from label import Label
 from printer import DisplayPrinter
 
 class LabelPreview(tk.Frame):
-    # TODO: Parameterise this and DPI
-    __aspect_ratio = 36 / 89
+    # XXX: There seems to be an unavoidable 5mm margin on the right edge,
+    # So just scale down the label by 10mm.
+    __label_width_mm = 89 - 10
+    __label_height_mm = 36
+    __aspect_ratio = __label_height_mm / __label_width_mm
 
     def __init__(self, master=None, width=500):
         super().__init__(master)
@@ -21,7 +24,8 @@ class LabelPreview(tk.Frame):
         self.update([''])
 
     def update(self, lines):
-        self.lbl = Label(lines)
+        self.lbl = Label(lines, dpi=300,
+                         size_mm=(LabelPreview.__label_width_mm, LabelPreview.__label_height_mm))
 
         img = self.lbl.image()
         img = img.resize((self.canvas.winfo_reqwidth(), self.canvas.winfo_reqheight()))
