@@ -54,13 +54,13 @@ class BadgerApp(ttk.Frame):
 
         if self.tagreader:
             self.wait_for_tag_gone = None
-            self.after(300, self.__check_for_tag)
+            self.after(100, self.__check_for_tag)
 
     def __check_for_tag(self):
         tag = self.tagreader.read_tag()
         if tag:
             if tag == self.wait_for_tag_gone:
-                self.after(300, self.__check_for_tag)
+                self.after(100, self.__check_for_tag)
                 return
 
             self.wait_for_tag_gone = tag
@@ -107,13 +107,11 @@ class BadgerApp(ttk.Frame):
             self.namebadge_ui.populate(name, comment)
             self.trovelabel_ui.populate(name, comment)
 
-            # If the UI is "on" the Edit page, stay on the Edit page by default,
-            # otherwise the "Scan a Tag" UI labelling is very confusing
-            if (buttons == 0 and self.nb.tab(self.nb.select(), "text") == "Edit Tag") or (buttons == 1):
-                self.db_ui.populate(tag, name, comment)
-                self.nb.select(self.db_ui)
-            elif buttons == 0: # Print name badge
+            if buttons == 0: # Print name badge
                 self.nb.select(self.namebadge_ui)
                 self.namebadge_ui.event_generate("<<Print_Label>>")
+            elif buttons == 1:
+                self.db_ui.populate(tag, name, comment)
+                self.nb.select(self.db_ui)
             elif buttons == 2: # Show storage tab
                 self.nb.select(self.trovelabel_ui)

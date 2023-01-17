@@ -169,7 +169,7 @@ class DatabaseUI(tk.Frame):
         self.tagbox_lbl = tk.Label(self, text="Editing tag:")
         self.tagbox_lbl.grid(column = 0, row = row, sticky='w')
 
-        self.tagvar = tk.StringVar(self, "Scan a Tag")
+        self.tagvar = tk.StringVar(self, "Scan a tag while holding left button")
         self.tagbox = ttk.Entry(self, textvariable=self.tagvar, state='disabled')
         self.tagbox.grid(column = 1, row = row, sticky = 'nwes')
         row += 1
@@ -178,7 +178,7 @@ class DatabaseUI(tk.Frame):
         self.namebox_lbl = tk.Label(self, text="Name:")
         self.namebox_lbl.grid(column = 0, row = row, sticky='w')
 
-        self.namevar = tk.StringVar(self, "Scan a Tag")
+        self.namevar = tk.StringVar(self, "Hold left button")
         self.namebox = ttk.Entry(self, textvariable=self.namevar, state='disabled')
         self.namebox.grid(column = 1, row = row, sticky = 'nwes')
         row += 1
@@ -187,7 +187,7 @@ class DatabaseUI(tk.Frame):
         self.cbox_lbl = tk.Label(self, text="Comment:")
         self.cbox_lbl.grid(column = 0, row = row, sticky='w')
 
-        self.commentvar = tk.StringVar(self, "To update it")
+        self.commentvar = tk.StringVar(self, "And scan a tag to update it")
         self.commentbox = ttk.Entry(self, textvariable=self.commentvar, state='disabled')
         self.commentbox.grid(column = 1, row = row, sticky = 'nwes')
         row += 1
@@ -234,7 +234,7 @@ class DatabaseUI(tk.Frame):
         except:
             self.db.insert(tag, name, comment)
 
-        self.tagvar.set("Scan a tag")
+        self.tagvar.set("Scan a tag while holding left button")
         self.namebox['state'] = 'disabled'
         self.commentbox['state'] = 'disabled'
         self.save['state'] = 'disabled'
@@ -254,9 +254,9 @@ class DatabaseUI(tk.Frame):
         self.save['state'] = 'normal'
 
     def reset(self):
-        self.tagvar.set("Scan a Tag")
-        self.namevar.set("Scan a Tag")
-        self.commentvar.set("To update it")
+        self.tagvar.set("Scan a tag while holding left button")
+        self.namevar.set("Hold left button")
+        self.commentvar.set("And scan a tag to update it")
         self.namebox['state'] = 'disabled'
         self.commentbox['state'] = 'disabled'
         self.print['state'] = 'disabled'
