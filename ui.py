@@ -207,7 +207,8 @@ class DatabaseUI(tk.Frame):
         row += 1
 
         # Save / Print button
-        self.print = tk.Button(self, text='Print', font=('Arial', 24), state='disabled')
+        self.print = tk.Button(self, text='Print', font=('Arial', 24), state='disabled',
+                               command=self.__print)
         self.print.grid(column = 0, row = row, columnspan=1, ipady=10, sticky='nsew')
 
         self.save = tk.Button(self, text='Save', font=('Arial', 24), state='disabled',
