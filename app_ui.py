@@ -74,12 +74,6 @@ class BadgerApp(ttk.Frame):
         if not self.tagreader:
             return
 
-        # Always reset the UI pages
-        self.namebadge_ui.reset()
-        self.trovelabel_ui.reset()
-        self.general_ui.reset()
-        self.db_ui.reset()
-
         tag = self.tagreader.read_tag()
         if tag and tag == self.wait_for_tag_gone:
             buttons = self.tagreader.read_buttons()

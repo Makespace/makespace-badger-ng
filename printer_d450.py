@@ -10,6 +10,9 @@ class PrinterDymo450():
             raise ValueError('PrinterDymo450: device not found')
         self.dev = dev
 
+        if dev.is_kernel_driver_active(0):
+            dev.detach_kernel_driver(0)
+
         dev.set_configuration()
         cfg = dev.get_active_configuration()
         intf = cfg[(0,0)]

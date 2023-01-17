@@ -16,7 +16,7 @@ class LabelPreview(tk.Frame):
     __label_height_mm = 36
     __aspect_ratio = __label_height_mm / __label_width_mm
 
-    def __init__(self, master=None, width=500):
+    def __init__(self, master=None, width=400):
         super().__init__(master)
         self.master = master
         self.canvas = tk.Canvas(self, width=width, height=int(width * LabelPreview.__aspect_ratio), background='white')
@@ -108,7 +108,7 @@ class NameBadgeUI(tk.Frame):
         self.preview_lbl.grid(column = 0, row = row, sticky='w')
         row +=1
 
-        self.preview = LabelPreview(self, 500)
+        self.preview = LabelPreview(self, 400)
         self.preview.grid(column = 0, row = row, columnspan=2)
         row += 1
 
@@ -202,7 +202,7 @@ class DatabaseUI(tk.Frame):
         self.preview_lbl.grid(column = 0, row = row, sticky='w')
         row +=1
 
-        self.preview = LabelPreview(self, 500)
+        self.preview = LabelPreview(self, 400)
         self.preview.grid(column = 0, row = row, columnspan=2)
         row += 1
 
@@ -255,8 +255,8 @@ class DatabaseUI(tk.Frame):
 
     def reset(self):
         self.tagvar.set("Scan a tag while holding left button")
-        self.namevar.set("Hold left button")
-        self.commentvar.set("And scan a tag to update it")
+        self.namevar.set("-")
+        self.commentvar.set("-")
         self.namebox['state'] = 'disabled'
         self.commentbox['state'] = 'disabled'
         self.print['state'] = 'disabled'
@@ -363,7 +363,7 @@ class TroveLabelUI(tk.Frame):
         self.preview_lbl.grid(column = 0, row = row, sticky='w')
         row +=1
 
-        self.preview = LabelPreview(self, 500)
+        self.preview = LabelPreview(self, 400)
         self.preview.grid(column = 0, row = row, columnspan=3)
         row += 1
 
@@ -422,7 +422,7 @@ class GeneralLabelUI(tk.Frame):
         row +=1
 
         # Text entry with scrollbars
-        self.textbox = tk.Text(self, width=32, height=5, wrap="none", font=('Arial', 24))
+        self.textbox = tk.Text(self, width=32, height=5, wrap="none", font=('Arial', 14))
         ys = ttk.Scrollbar(self, orient = 'vertical', command = self.textbox.yview)
         xs = ttk.Scrollbar(self, orient = 'horizontal', command = self.textbox.xview)
         self.textbox['yscrollcommand'] = ys.set
@@ -449,7 +449,7 @@ class GeneralLabelUI(tk.Frame):
         self.preview_lbl.grid(column = 0, row = row, sticky='w')
         row +=1
 
-        self.preview = LabelPreview(self, 500)
+        self.preview = LabelPreview(self, 400)
         self.preview.grid(column = 0, row = row)
         row += 1
 
