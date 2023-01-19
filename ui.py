@@ -9,7 +9,9 @@ from tkinter import font as tkfont
 from label import Label
 from printer import DisplayPrinter
 
-UPDATE_DELAY=600
+import time
+
+UPDATE_DELAY=300
 
 class LabelPreview(tk.Frame):
     # XXX: There seems to be an unavoidable 5mm margin on the right edge,
@@ -432,7 +434,7 @@ class GeneralLabelUI(tk.Frame):
         self.master = master
         self.printer = printer
         self.create_widgets()
-        self.generation = 0
+        self.last_mod_time = 0
         self.timer_id = None
 
     def update_preview(self, lines):
@@ -447,21 +449,25 @@ class GeneralLabelUI(tk.Frame):
 
         return lines
 
-    def __update_timer_cb(self, generation):
-        lines = self.get_lines()
-        self.update_preview(lines)
-        self.textbox.edit_modified(False)
-
-        if generation < self.generation:
-            self.timer_id = self.after(UPDATE_DELAY, self.__update_timer_cb, self.generation)
-        else:
+    def __update_timer_cb(self):
+        now = time.monotonic_ns()
+        diff = now - self.last_mod_time
+        if diff >= UPDATE_DELAY * 1000000:
+            lines = self.get_lines()
+            self.update_preview(lines)
+            self.print['state'] = 'normal'
             self.timer_id = None
+        else:
+            self.timer_id = self.after(UPDATE_DELAY, self.__update_timer_cb)
 
     def __text_modified(self, event):
-        self.generation += 1
+        self.last_mod_time = time.monotonic_ns()
+        self.print['state'] = 'disabled'
 
         if self.timer_id is None:
-            self.timer_id = self.after(UPDATE_DELAY, self.__update_timer_cb, self.generation)
+            self.timer_id = self.after(UPDATE_DELAY, self.__update_timer_cb)
+
+        self.textbox.edit_modified(False)
 
     def __print(self):
         img = self.preview.image()
