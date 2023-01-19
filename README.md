@@ -34,7 +34,7 @@ very smart).
 
 This is an enhancement on top of the original Badger, allowing labels to be
 printed which include dates, suitable for labelling things in a way which
-meets the the Makespace storage requirements
+meets the Makespace storage requirements
 
 ## Operation
 
@@ -108,3 +108,23 @@ python3 -m virtualenv badger_venv
 pip3 install -r requirements.txt
 python3 main.py ui --printer d450 --database badger.db
 ```
+
+## TODO List
+
+* The 10mm margin should be implemented more cleanly. At the moment, the label
+  size is just reduced by 10mm before instantiating Label()
+  It would be better to pass a margin down to the Label() class and have it
+  handle it.
+* Implement some audio feedback. This is hacked in on the Makespace machine, but
+  needs to be done properly. The laptop's sound card seems to enter some sleep
+  mode after inactivity, so I think the implementation needs to be a thread
+  (outside of tkinter) which periodically plays a "silent" sound clip to keep
+  the sound card alive, playing beeps when requested.
+* Performance improvements:
+** The preview shouldn't update on every keystroke. There should be a timer so
+   that it updates after some short period of time (bonus points for doing the
+   image render in a different thread from the UI)
+** Implement a font cache. I haven't measured it, but I expect that loading all
+   the font sizes is a significant overhead in rendering
+** Implement a smarter font-size search (binary search?)
+* Font selection?!
