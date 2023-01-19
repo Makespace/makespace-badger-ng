@@ -82,6 +82,7 @@ class BadgerApp(ttk.Frame):
             # Special case the "General" tag
             if tag.hex() == "4777701c":
                 self.nb.select(self.general_ui)
+                self.general_ui.reset()
                 return
 
             # All other tags can only be handled if we have a database
@@ -97,15 +98,16 @@ class BadgerApp(ttk.Frame):
                 self.nb.select(self.db_ui)
                 return
 
-            # Populate the tabs
-            self.namebadge_ui.populate(name, comment)
-            self.trovelabel_ui.populate(name, comment)
-
             if buttons == 0: # Print name badge
+                self.namebadge_ui.populate(name, comment)
                 self.nb.select(self.namebadge_ui)
                 self.namebadge_ui.event_generate("<<Print_Label>>")
+                self.trovelabel_ui.populate(name, comment)
             elif buttons == 1:
                 self.db_ui.populate(tag, name, comment)
                 self.nb.select(self.db_ui)
+                self.namebadge_ui.populate(name, comment)
             elif buttons == 2: # Show storage tab
+                self.trovelabel_ui.populate(name, comment)
                 self.nb.select(self.trovelabel_ui)
+                self.namebadge_ui.populate(name, comment)

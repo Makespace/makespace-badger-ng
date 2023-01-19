@@ -34,6 +34,7 @@ class Label():
     def __init__(self, lines, dpi=300, size_mm=(89-10, 36)):
         self.dpi = dpi
         self.res = [self.__mm_to_px(s) for s in size_mm]
+        self.img = None
 
         # Make sure all entries are a list of entries
         for i, line in enumerate(lines):
@@ -95,6 +96,9 @@ class Label():
                 raise ValueError(f"couldn't fit {line}")
 
     def image(self):
+        if self.img:
+            return self.img
+
         # Monochrome, 1 byte-per-pixel, fill with white
         img = Image.new('1', self.res, 1)
 
@@ -126,5 +130,7 @@ class Label():
                 x += col_width
 
             line_top += lp.height + line_gap
+
+        self.img = img
 
         return img
