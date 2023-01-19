@@ -9,6 +9,8 @@ from tkinter import font as tkfont
 from label import Label
 from printer import DisplayPrinter
 
+UPDATE_DELAY=600
+
 class LabelPreview(tk.Frame):
     # XXX: There seems to be an unavoidable 5mm margin on the right edge,
     # So just scale down the label by 10mm.
@@ -42,6 +44,8 @@ class NameBadgeUI(tk.Frame):
         self.master = master
         self.printer = printer
         self.create_widgets()
+        self.generation = 0
+        self.timer_id = None
         self.__text_modified()
 
         self.event_add("<<Print_Label>>", "None")
@@ -67,9 +71,20 @@ class NameBadgeUI(tk.Frame):
 
         return lines
 
-    def __text_modified(self, *args):
+    def __update_timer_cb(self, generation):
         lines = self.get_lines()
         self.update_preview(lines)
+
+        if generation < self.generation:
+            self.timer_id = self.after(UPDATE_DELAY, self.__update_timer_cb, self.generation)
+        else:
+            self.timer_id = None
+
+    def __text_modified(self, *args):
+        self.generation += 1
+
+        if self.timer_id is None:
+            self.timer_id = self.after(UPDATE_DELAY, self.__update_timer_cb, self.generation)
 
     def __print(self):
         print("Printing...")
@@ -134,6 +149,8 @@ class DatabaseUI(tk.Frame):
         self.printer = printer
         self.db = db
         self.create_widgets()
+        self.generation = 0
+        self.timer_id = None
         self.__text_modified()
 
     def update_preview(self, lines):
@@ -153,9 +170,20 @@ class DatabaseUI(tk.Frame):
 
         return lines
 
-    def __text_modified(self, *args):
+    def __update_timer_cb(self, generation):
         lines = self.get_lines()
         self.update_preview(lines)
+
+        if generation < self.generation:
+            self.timer_id = self.after(UPDATE_DELAY, self.__update_timer_cb, self.generation)
+        else:
+            self.timer_id = None
+
+    def __text_modified(self):
+        self.generation += 1
+
+        if self.timer_id is None:
+            self.timer_id = self.after(UPDATE_DELAY, self.__update_timer_cb, self.generation)
 
     def __print(self):
         img = self.preview.image()
@@ -268,6 +296,8 @@ class TroveLabelUI(tk.Frame):
         self.master = master
         self.printer = printer
         self.create_widgets()
+        self.generation = 0
+        self.timer_id = None
         self.__set_out_to_days(30)
         self.__text_modified()
 
@@ -289,6 +319,15 @@ class TroveLabelUI(tk.Frame):
                 [in_text, out_text],
         ]
 
+    def __update_timer_cb(self, generation):
+        lines = self.get_lines()
+        self.update_preview(lines)
+
+        if generation < self.generation:
+            self.timer_id = self.after(UPDATE_DELAY, self.__update_timer_cb, self.generation)
+        else:
+            self.timer_id = None
+
     def __set_out_to_days(self, days):
         today = datetime.date.today()
         delta = datetime.timedelta(days=days)
@@ -305,8 +344,10 @@ class TroveLabelUI(tk.Frame):
         else:
                 self.print['state'] = 'normal'
 
-        lines = self.get_lines()
-        self.update_preview(lines)
+        self.generation += 1
+
+        if self.timer_id is None:
+            self.timer_id = self.after(UPDATE_DELAY, self.__update_timer_cb, self.generation)
 
     def __print(self):
         img = self.preview.image()
@@ -356,12 +397,12 @@ class TroveLabelUI(tk.Frame):
         # Separator
         self.sep = ttk.Separator(self, orient='horizontal')
         self.sep.grid(column = 0, row = row, columnspan=3, sticky='we', pady=20)
-        row +=1
+        row += 1
 
         # Label preview
         self.preview_lbl = tk.Label(self, text="Label preview:")
         self.preview_lbl.grid(column = 0, row = row, sticky='w')
-        row +=1
+        row += 1
 
         self.preview = LabelPreview(self, 400)
         self.preview.grid(column = 0, row = row, columnspan=3)
@@ -391,6 +432,8 @@ class GeneralLabelUI(tk.Frame):
         self.master = master
         self.printer = printer
         self.create_widgets()
+        self.generation = 0
+        self.timer_id = None
 
     def update_preview(self, lines):
         self.preview.update(lines)
@@ -404,10 +447,21 @@ class GeneralLabelUI(tk.Frame):
 
         return lines
 
-    def __text_modified(self, event):
+    def __update_timer_cb(self, generation):
         lines = self.get_lines()
         self.update_preview(lines)
         self.textbox.edit_modified(False)
+
+        if generation < self.generation:
+            self.timer_id = self.after(UPDATE_DELAY, self.__update_timer_cb, self.generation)
+        else:
+            self.timer_id = None
+
+    def __text_modified(self, event):
+        self.generation += 1
+
+        if self.timer_id is None:
+            self.timer_id = self.after(UPDATE_DELAY, self.__update_timer_cb, self.generation)
 
     def __print(self):
         img = self.preview.image()
