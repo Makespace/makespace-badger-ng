@@ -2,39 +2,18 @@
 
 import tkinter as tk
 from tkinter import ttk
-from db import Database
 from ui import NameBadgeUI, TroveLabelUI, GeneralLabelUI, DatabaseUI
-from tagreader import TagReader
-from printer import DisplayPrinter, RotatePrinter
-from printer_d450 import PrinterDymo450
+from printer import DisplayPrinter
 
 class BadgerApp(ttk.Frame):
-    def __init__(self, master=None, args=None):
+    def __init__(self, master, printer=DisplayPrinter, tagreader=None, db=None):
         super().__init__(master)
         self.master = master
         self.pack()
 
-        try:
-            self.tagreader = TagReader(args.port)
-        except:
-            self.tagreader = None
-            print("Couldn't open tag reader (did you specify the correct --port?)")
-
-        if args.database:
-            try:
-                self.db = Database(args.database)
-            except:
-                self.db = None
-                print("Couldn't open database")
-        else:
-            self.db = None
-
-        if args.printer == 'display':
-            self.printer = DisplayPrinter()
-        elif args.printer == 'display_r90':
-            self.printer = RotatePrinter(DisplayPrinter())
-        elif args.printer == 'd450':
-            self.printer = RotatePrinter(PrinterDymo450())
+        self.printer = printer
+        self.tagreader = tagreader
+        self.db = db
 
         self.nb = ttk.Notebook(self)
         self.nb.pack()

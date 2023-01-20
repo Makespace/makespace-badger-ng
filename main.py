@@ -3,6 +3,9 @@
 from db import Database
 from label import Label
 from tagreader import TagReader
+from fakereader import FakeTagReader
+from printer import DisplayPrinter, RotatePrinter
+from printer_d450 import PrinterDymo450
 from app_ui import BadgerApp
 import argparse
 import datetime
@@ -88,8 +91,33 @@ def label(args):
 
 def run_ui(args):
     root = tk.Tk()
+
+    if args.database:
+        db = open_db(args)
+    else:
+        db = None
+
+    if args.printer == 'display':
+        printer = DisplayPrinter()
+    elif args.printer == 'display_r90':
+        printer = RotatePrinter(DisplayPrinter())
+    elif args.printer == 'd450':
+        printer = RotatePrinter(PrinterDymo450())
+    else:
+        raise ValueError("No printer?")
+
+    if args.port == "fake":
+        reader_window = tk.Toplevel(root)
+        tagreader = FakeTagReader(reader_window)
+    else:
+        try:
+            tagreader = TagReader(args.port)
+        except:
+            tagreader = None
+            print("Couldn't open tag reader (did you specify the correct --port?)")
+
     root.resizable(False,False)
-    app = BadgerApp(root, args)
+    app = BadgerApp(root, printer=printer, tagreader=tagreader, db=db)
     app.mainloop()
 
 def main():
@@ -152,7 +180,8 @@ def main():
                                           description='Run the badger UI',
                                           help='Run the badger UI')
     ui_parser.add_argument('--port', help='Serial port for the tag reader', default='/dev/ttyUSB0')
-    ui_parser.add_argument('-d', '--database', help='sqlite3 database file')
+    ui_parser.add_argument('-d', '--database', help='sqlite3 database file', default=None)
+    ui_parser.add_argument('--init', help="Initialise the database", action='store_true')
     ui_parser.add_argument('--printer', help='Printer to use', choices=['display', 'display_r90', 'd450'], default='display')
     ui_parser.set_defaults(func=run_ui)
 
