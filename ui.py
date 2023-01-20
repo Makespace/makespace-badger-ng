@@ -458,7 +458,8 @@ class GeneralLabelUI(tk.Frame):
             self.print['state'] = 'normal'
             self.timer_id = None
         else:
-            self.timer_id = self.after(UPDATE_DELAY, self.__update_timer_cb)
+            self.timer_id = self.after(UPDATE_DELAY - (diff * 1000000) + 10,
+                                       self.__update_timer_cb)
 
     def __text_modified(self, event):
         self.last_mod_time = time.monotonic_ns()
