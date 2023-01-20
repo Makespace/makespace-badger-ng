@@ -194,7 +194,7 @@ class DatabaseUI(tk.Frame):
 
         return lines
 
-    def __text_modified(self):
+    def __text_modified(self, *args):
         self.updater.set_modified()
 
     def __print(self):
