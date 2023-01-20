@@ -24,7 +24,10 @@ class LabelPreview(tk.Frame):
     def __init__(self, master=None, width=400):
         super().__init__(master)
         self.master = master
-        self.canvas = tk.Canvas(self, width=width, height=int(width * LabelPreview.__aspect_ratio), background='white')
+        self.canvas_width = width
+        self.canvas_height = int(width * LabelPreview.__aspect_ratio)
+
+        self.canvas = tk.Canvas(self, width=self.canvas_width, height=self.canvas_height, background='white', bd=0)
         self.canvas.pack()
         self.lines = ['']
         self.update(self.lines)
@@ -36,12 +39,11 @@ class LabelPreview(tk.Frame):
 
         self.lbl = Label(lines, dpi=300,
                          size_mm=(LabelPreview.__label_width_mm, LabelPreview.__label_height_mm))
-
         img = self.lbl.image()
-        img = img.resize((self.canvas.winfo_reqwidth(), self.canvas.winfo_reqheight()))
+        img = img.resize((self.canvas_width, self.canvas_height))
         self.bmp = ImageTk.BitmapImage(img, foreground='white')
         self.canvas.create_rectangle(0, 0, self.canvas.winfo_reqwidth(), self.canvas.winfo_reqheight(), fill='black')
-        self.canvas.create_image(0, 0, image=self.bmp, anchor="nw")
+        self.canvas.create_image(self.canvas.winfo_reqwidth() / 2, self.canvas.winfo_reqheight() / 2, image=self.bmp)
 
     def image(self):
         return self.lbl.image()
