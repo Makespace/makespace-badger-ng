@@ -48,15 +48,39 @@ class LabelPreview(tk.Frame):
     def image(self):
         return self.lbl.image()
 
+class UpdateDelayer():
+    def __init__(self, parent, update_cb, update_delay_ms=UPDATE_DELAY):
+        self.parent = parent
+        self.update_cb = update_cb
+        self.update_delay_ms = update_delay_ms
+
+        self.last_mod_time = 0
+        self.timer_id = None
+
+    def set_modified(self):
+        self.last_mod_time = time.monotonic_ns()
+
+        if self.timer_id is None:
+            self.timer_id = self.parent.after(UPDATE_DELAY, self.__timer_cb)
+
+    def __timer_cb(self):
+        now = time.monotonic_ns()
+        diff = (now - self.last_mod_time) // 1000000
+        if diff >= self.update_delay_ms:
+            self.update_cb()
+            self.timer_id = None
+        else:
+            self.timer_id = self.parent.after(self.update_delay_ms - diff + 10,
+                                              self.__timer_cb)
+
 class NameBadgeUI(tk.Frame):
     def __init__(self, master=None, printer=DisplayPrinter()):
         super().__init__(master)
         self.master = master
         self.printer = printer
         self.create_widgets()
-        self.generation = 0
-        self.timer_id = None
-        self.__text_modified()
+        self.updater = UpdateDelayer(self, self.update_preview)
+        self.update_preview()
 
         self.event_add("<<Print_Label>>", "None")
         self.bind('<<Print_Label>>', self.handle_print_event)
@@ -64,7 +88,8 @@ class NameBadgeUI(tk.Frame):
     def handle_print_event(self, event):
         self.__print()
 
-    def update_preview(self, lines):
+    def update_preview(self):
+        lines = self.get_lines()
         self.preview.update(lines)
 
     def get_lines(self):
@@ -81,20 +106,8 @@ class NameBadgeUI(tk.Frame):
 
         return lines
 
-    def __update_timer_cb(self, generation):
-        lines = self.get_lines()
-        self.update_preview(lines)
-
-        if generation < self.generation:
-            self.timer_id = self.after(UPDATE_DELAY, self.__update_timer_cb, self.generation)
-        else:
-            self.timer_id = None
-
     def __text_modified(self, *args):
-        self.generation += 1
-
-        if self.timer_id is None:
-            self.timer_id = self.after(UPDATE_DELAY, self.__update_timer_cb, self.generation)
+        self.updater.set_modified()
 
     def __print(self):
         print("Printing...")
@@ -159,11 +172,11 @@ class DatabaseUI(tk.Frame):
         self.printer = printer
         self.db = db
         self.create_widgets()
-        self.generation = 0
-        self.timer_id = None
-        self.__text_modified()
+        self.updater = UpdateDelayer(self, self.update_preview)
+        self.update_preview()
 
-    def update_preview(self, lines):
+    def update_preview(self):
+        lines = self.get_lines()
         self.preview.update(lines)
 
     def get_lines(self):
@@ -180,20 +193,8 @@ class DatabaseUI(tk.Frame):
 
         return lines
 
-    def __update_timer_cb(self, generation):
-        lines = self.get_lines()
-        self.update_preview(lines)
-
-        if generation < self.generation:
-            self.timer_id = self.after(UPDATE_DELAY, self.__update_timer_cb, self.generation)
-        else:
-            self.timer_id = None
-
     def __text_modified(self):
-        self.generation += 1
-
-        if self.timer_id is None:
-            self.timer_id = self.after(UPDATE_DELAY, self.__update_timer_cb, self.generation)
+        self.updater.set_modified()
 
     def __print(self):
         img = self.preview.image()
@@ -306,12 +307,12 @@ class TroveLabelUI(tk.Frame):
         self.master = master
         self.printer = printer
         self.create_widgets()
-        self.generation = 0
-        self.timer_id = None
+        self.updater = UpdateDelayer(self, self.update_preview)
         self.__set_out_to_days(30)
-        self.__text_modified()
+        self.update_preview()
 
-    def update_preview(self, lines):
+    def update_preview(self):
+        lines = self.get_lines()
         self.preview.update(lines)
 
     def get_lines(self):
@@ -329,15 +330,6 @@ class TroveLabelUI(tk.Frame):
                 [in_text, out_text],
         ]
 
-    def __update_timer_cb(self, generation):
-        lines = self.get_lines()
-        self.update_preview(lines)
-
-        if generation < self.generation:
-            self.timer_id = self.after(UPDATE_DELAY, self.__update_timer_cb, self.generation)
-        else:
-            self.timer_id = None
-
     def __set_out_to_days(self, days):
         today = datetime.date.today()
         delta = datetime.timedelta(days=days)
@@ -354,10 +346,7 @@ class TroveLabelUI(tk.Frame):
         else:
                 self.print['state'] = 'normal'
 
-        self.generation += 1
-
-        if self.timer_id is None:
-            self.timer_id = self.after(UPDATE_DELAY, self.__update_timer_cb, self.generation)
+        self.updater.set_modified()
 
     def __print(self):
         img = self.preview.image()
@@ -442,10 +431,10 @@ class GeneralLabelUI(tk.Frame):
         self.master = master
         self.printer = printer
         self.create_widgets()
-        self.last_mod_time = 0
-        self.timer_id = None
+        self.updater = UpdateDelayer(self, self.update_preview)
 
     def invalidate(self):
+        self.updater.set_modified()
         self.print['state'] = 'disabled'
 
     def update_preview(self):
@@ -461,23 +450,9 @@ class GeneralLabelUI(tk.Frame):
         lines = text.split('\n')
         return lines
 
-    def __update_timer_cb(self):
-        now = time.monotonic_ns()
-        diff = (now - self.last_mod_time) // 1000000
-        if diff >= UPDATE_DELAY:
-            self.update_preview()
-            self.timer_id = None
-        else:
-            self.timer_id = self.after(UPDATE_DELAY - diff + 10,
-                                       self.__update_timer_cb)
-
     def __text_modified(self, event):
         self.invalidate()
-        self.last_mod_time = time.monotonic_ns()
         self.textbox.edit_modified(False)
-
-        if self.timer_id is None:
-            self.timer_id = self.after(UPDATE_DELAY, self.__update_timer_cb)
 
     def __print(self):
         self.update_preview()
