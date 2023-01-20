@@ -111,6 +111,7 @@ class NameBadgeUI(tk.Frame):
 
     def __print(self):
         print("Printing...")
+        self.update_preview()
         img = self.preview.image()
         self.printer.print_image(img)
 
@@ -197,6 +198,7 @@ class DatabaseUI(tk.Frame):
         self.updater.set_modified()
 
     def __print(self):
+        self.update_preview()
         img = self.preview.image()
         self.printer.print_image(img)
 
@@ -330,25 +332,36 @@ class TroveLabelUI(tk.Frame):
                 [in_text, out_text],
         ]
 
+    def inputs_valid(self):
+        name_text = self.namevar.get()
+        contact_text = self.contactvar.get()
+        out_text = self.outvar.get()
+
+        if len(name_text) == 0 or len(contact_text) == 0 or len(out_text) == 0:
+            return False
+        return True
+
     def __set_out_to_days(self, days):
         today = datetime.date.today()
         delta = datetime.timedelta(days=days)
         out = today + delta
         self.outvar.set(out.isoformat())
 
+    def handle_days_button(self, days):
+        self.__set_out_to_days(days)
+        # Update preview immediately
+        self.update_preview()
+
     def __text_modified(self, *args):
-        name_text = self.namevar.get()
-        contact_text = self.contactvar.get()
-        out_text = self.outvar.get()
-
-        if len(name_text) == 0 or len(contact_text) == 0 or len(out_text) == 0:
-                self.print['state'] = 'disabled'
-        else:
-                self.print['state'] = 'normal'
-
         self.updater.set_modified()
 
+        if self.inputs_valid():
+            self.print['state'] = 'normal'
+        else:
+            self.print['state'] = 'disabled'
+
     def __print(self):
+        self.update_preview()
         img = self.preview.image()
         self.printer.print_image(img)
 
@@ -385,11 +398,11 @@ class TroveLabelUI(tk.Frame):
 
         # Date buttons
         self.monthbutton1 = ttk.Button(self, text="1 month",
-                                       command=lambda: self.__set_out_to_days(30))
+                                       command=lambda: self.handle_days_button(30))
         self.monthbutton1.grid(column = 1, row = row, sticky = 'nwes')
 
         self.monthbutton3 = ttk.Button(self, text="3 months",
-                                       command=lambda: self.__set_out_to_days(90))
+                                       command=lambda: self.handle_days_button(90))
         self.monthbutton3.grid(column = 2, row = row, sticky = 'nwes')
         row += 1
 
@@ -420,7 +433,7 @@ class TroveLabelUI(tk.Frame):
         self.namevar.set(name)
         self.contactvar.set(comment)
         self.__set_out_to_days(30)
-        self.__text_modified()
+        self.update_preview()
 
     def reset(self):
         self.populate("Your Name", "Your Contact Info")
@@ -433,14 +446,9 @@ class GeneralLabelUI(tk.Frame):
         self.create_widgets()
         self.updater = UpdateDelayer(self, self.update_preview)
 
-    def invalidate(self):
-        self.updater.set_modified()
-        self.print['state'] = 'disabled'
-
     def update_preview(self):
         lines = self.get_lines()
         self.preview.update(lines)
-        self.print['state'] = 'normal'
 
     def get_lines(self):
         # Text always adds an invisible trailing newline, so remove that
@@ -451,7 +459,7 @@ class GeneralLabelUI(tk.Frame):
         return lines
 
     def __text_modified(self, event):
-        self.invalidate()
+        self.updater.set_modified()
         self.textbox.edit_modified(False)
 
     def __print(self):
