@@ -12,7 +12,7 @@ from printer import DisplayPrinter
 
 import time
 
-UPDATE_DELAY=300
+UPDATE_DELAY=500
 
 class LabelPreview(tk.Frame):
     # XXX: There seems to be an unavoidable 5mm margin on the right edge,
@@ -463,12 +463,12 @@ class GeneralLabelUI(tk.Frame):
 
     def __update_timer_cb(self):
         now = time.monotonic_ns()
-        diff = now - self.last_mod_time
-        if diff >= UPDATE_DELAY * 1000000:
+        diff = (now - self.last_mod_time) // 1000000
+        if diff >= UPDATE_DELAY:
             self.update_preview()
             self.timer_id = None
         else:
-            self.timer_id = self.after(UPDATE_DELAY - (diff * 1000000) + 10,
+            self.timer_id = self.after(UPDATE_DELAY - diff + 10,
                                        self.__update_timer_cb)
 
     def __text_modified(self, event):
