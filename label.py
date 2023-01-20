@@ -73,9 +73,14 @@ class Label():
             # fix that, but it doesn't.
             font = self.base_font.font_variant(size=size)
 
-            # left, top, right, bottom
-            gap_bbox = font.getbbox('  ')
-            gap_width = gap_bbox[2] - gap_bbox[0]
+            if len(line) > 1:
+                # left, top, right, bottom
+                gap_bbox = font.getbbox('  ')
+                gap_width = gap_bbox[2] - gap_bbox[0]
+            else:
+                # Still give some border at the edge
+                # TODO: When "margin" is implemented, this will be unnecessary
+                gap_width = 4;
             max_elem_width = (self.res[0] // len(line)) - gap_width
 
             ok = True
