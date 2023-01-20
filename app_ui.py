@@ -6,7 +6,7 @@ from ui import NameBadgeUI, TroveLabelUI, GeneralLabelUI, DatabaseUI
 from printer import DisplayPrinter
 
 class BadgerApp(ttk.Frame):
-    def __init__(self, master, printer=DisplayPrinter, tagreader=None, db=None):
+    def __init__(self, master, printer=DisplayPrinter, tagreader=None, db=None, sound=None):
         super().__init__(master)
         self.master = master
         self.pack()
@@ -14,6 +14,7 @@ class BadgerApp(ttk.Frame):
         self.printer = printer
         self.tagreader = tagreader
         self.db = db
+        self.sound = sound
 
         self.nb = ttk.Notebook(self)
         self.nb.pack()
@@ -55,6 +56,8 @@ class BadgerApp(ttk.Frame):
 
         tag = self.tagreader.read_tag()
         if tag and tag == self.wait_for_tag_gone:
+            if self.sound:
+                self.sound.beep()
             buttons = self.tagreader.read_buttons()
             print(f"tag: {tag.hex()}, buttons: {buttons}")
 
