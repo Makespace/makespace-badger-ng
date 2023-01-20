@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import copy
 import datetime
 from PIL import ImageTk, ImageOps
 import tkinter as tk
@@ -25,9 +26,14 @@ class LabelPreview(tk.Frame):
         self.master = master
         self.canvas = tk.Canvas(self, width=width, height=int(width * LabelPreview.__aspect_ratio), background='white')
         self.canvas.pack()
-        self.update([''])
+        self.lines = ['']
+        self.update(self.lines)
 
     def update(self, lines):
+        if lines == self.lines:
+            return
+        self.lines = copy.deepcopy(lines)
+
         self.lbl = Label(lines, dpi=300,
                          size_mm=(LabelPreview.__label_width_mm, LabelPreview.__label_height_mm))
 
@@ -437,8 +443,13 @@ class GeneralLabelUI(tk.Frame):
         self.last_mod_time = 0
         self.timer_id = None
 
-    def update_preview(self, lines):
+    def invalidate(self):
+        self.print['state'] = 'disabled'
+
+    def update_preview(self):
+        lines = self.get_lines()
         self.preview.update(lines)
+        self.print['state'] = 'normal'
 
     def get_lines(self):
         # Text always adds an invisible trailing newline, so remove that
@@ -446,31 +457,28 @@ class GeneralLabelUI(tk.Frame):
         # blank lines for formatting
         text = self.textbox.get('1.0', 'end')[:-1]
         lines = text.split('\n')
-
         return lines
 
     def __update_timer_cb(self):
         now = time.monotonic_ns()
         diff = now - self.last_mod_time
         if diff >= UPDATE_DELAY * 1000000:
-            lines = self.get_lines()
-            self.update_preview(lines)
-            self.print['state'] = 'normal'
+            self.update_preview()
             self.timer_id = None
         else:
             self.timer_id = self.after(UPDATE_DELAY - (diff * 1000000) + 10,
                                        self.__update_timer_cb)
 
     def __text_modified(self, event):
+        self.invalidate()
         self.last_mod_time = time.monotonic_ns()
-        self.print['state'] = 'disabled'
+        self.textbox.edit_modified(False)
 
         if self.timer_id is None:
             self.timer_id = self.after(UPDATE_DELAY, self.__update_timer_cb)
 
-        self.textbox.edit_modified(False)
-
     def __print(self):
+        self.update_preview()
         img = self.preview.image()
         self.printer.print_image(img)
 

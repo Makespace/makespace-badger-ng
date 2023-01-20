@@ -36,11 +36,14 @@ class Label():
         self.res = [self.__mm_to_px(s) for s in size_mm]
         self.img = None
 
+        lines_copy = []
         # Make sure all entries are a list of entries
         for i, line in enumerate(lines):
             if not isinstance(line, list):
-                lines[i] = [line]
-        self.lines = lines
+                lines_copy.append([line])
+            else:
+                lines_copy.append(line)
+        self.lines = lines_copy
 
         # Assign the appropriate maximum line percentages
         if len(self.lines) <= len(Label.__line_portions):
