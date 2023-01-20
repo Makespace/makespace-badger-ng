@@ -64,12 +64,13 @@ class Label():
 
         max_elem_width = self.res[0] // len(line)
 
+        # Binary search to find the maximum allowable size that fits
+        max_font_size = size
+        min_font_size = 1
         while True:
             # FIXME: There used to be a font cache, but it grew too large
             # and then font loading would fail. I thought "font_variant" would
             # fix that, but it doesn't.
-            # There should be a way to do smarter search/caching - maybe a
-            # binary search on size
             font = self.base_font.font_variant(size=size)
 
             # left, top, right, bottom
@@ -77,23 +78,30 @@ class Label():
             gap_width = gap_bbox[2] - gap_bbox[0]
             max_elem_width = (self.res[0] // len(line)) - gap_width
 
+            ok = True
             boxes = []
             # Get the bounding box for each element, anchored in the centre
+            # If any element is too big, bail out early
             for elem in line:
                 bbox = font.getbbox(elem, anchor='mm')
-                boxes.append(bbox)
-
-            # If any element is too big, reduce the font size and try again
-            ok = True
-            for bbox in boxes:
                 if (bbox[2] - bbox[0]) > max_elem_width:
                     ok = False
-                    size -= 1
-                    del font
                     break
+                boxes.append(bbox)
 
             if ok:
+                min_font_size = size
+            else:
+                max_font_size = size
+
+            new_size = min_font_size + ((max_font_size - min_font_size) // 2)
+
+            if new_size == size:
                 return Label.LabelLine(font, line, boxes)
+            else:
+                del font
+
+            size = new_size
 
             if size == 0:
                 raise ValueError(f"couldn't fit {line}")
