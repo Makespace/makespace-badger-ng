@@ -62,8 +62,6 @@ class Label():
         size = self.max_line_heights[idx]
         line = self.lines[idx]
 
-        max_elem_width = self.res[0] // len(line)
-
         # Binary search to find the maximum allowable size that fits
         max_font_size = size
         min_font_size = 1
@@ -73,9 +71,12 @@ class Label():
             # fix that, but it doesn't.
             font = self.base_font.font_variant(size=size)
 
-            # left, top, right, bottom
-            gap_bbox = font.getbbox('  ')
-            gap_width = gap_bbox[2] - gap_bbox[0]
+            if len(line) > 1:
+                # left, top, right, bottom
+                gap_bbox = font.getbbox('  ')
+                gap_width = gap_bbox[2] - gap_bbox[0]
+            else:
+                gap_width = 0
             max_elem_width = (self.res[0] // len(line)) - gap_width
 
             ok = True
