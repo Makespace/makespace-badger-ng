@@ -88,9 +88,7 @@ woke it again at appropriate times - but it seems to leave the backlight on,
 so presumably doesn't actually result in any power savings. Badger-NG should
 improve on that if/when support is added.
 
-## Installation
-
-TODO - but once all functionality is frozen, it should be a case of:
+## Installation + Running
 
 `pip3 install -r requirements.txt`
 
@@ -100,13 +98,11 @@ It depends on:
 * pyusb
 * tkinter (part of standard Python 3 installation)
 
-Ideally, it would be installed in a virtualenv:
+There's quite a few command-line options and different commands, but for the
+main UI:
 
 ```
-python3 -m virtualenv badger_venv
-. ./badger_venv/bin/activate
-pip3 install -r requirements.txt
-python3 main.py ui --printer d450 --database badger.db
+python3 main.py ui --port=/dev/ttyUSB0 --printer=d450 --database=badge.db --sound
 ```
 
 ## TODO List
@@ -115,16 +111,10 @@ python3 main.py ui --printer d450 --database badger.db
   size is just reduced by 10mm before instantiating Label()
   It would be better to pass a margin down to the Label() class and have it
   handle it.
-* Implement some audio feedback. This is hacked in on the Makespace machine, but
-  needs to be done properly. The laptop's sound card seems to enter some sleep
-  mode after inactivity, so I think the implementation needs to be a thread
-  (outside of tkinter) which periodically plays a "silent" sound clip to keep
-  the sound card alive, playing beeps when requested.
-* Performance improvements:
-** The preview shouldn't update on every keystroke. There should be a timer so
-   that it updates after some short period of time (bonus points for doing the
-   image render in a different thread from the UI)
-** Implement a font cache. I haven't measured it, but I expect that loading all
-   the font sizes is a significant overhead in rendering
-** Implement a smarter font-size search (binary search?)
-* Font selection?!
+* The sound filenames are hard-coded, and the audio files themselves aren't
+  checked in to the repo.
+  * Find or create a beep which we can be sure we can include in the repo.
+  * Make the filenames parameters
+* Custom font support?
+* Link up to the central database
+* Make the different label options more obvious
