@@ -5,7 +5,7 @@ from PIL import Image
 class DisplayPrinter:
     def __init__(self):
         pass
-    def print_image(self, image):
+    def print_image(self, image, **kwargs):
         image.show()
 
 class RotatePrinter:
@@ -14,7 +14,6 @@ class RotatePrinter:
         self.rot = rot
         pass
 
-    def print_image(self, image):
+    def print_image(self, image, **kwargs):
         image = image.transpose(Image.Transpose.ROTATE_90)
-        self.printer.print_image(image)
-
+        self.printer.print_image(image, **kwargs)

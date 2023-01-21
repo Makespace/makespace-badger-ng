@@ -3,12 +3,15 @@
 import usb.core
 import usb.util
 
+import multiprocessing
+
 class PrinterDymo450():
     def __init__(self):
         dev = usb.core.find(idVendor=0x0922, idProduct=0x0020)
         if dev is None:
             raise ValueError('PrinterDymo450: device not found')
         self.dev = dev
+        self.print_proc = None
 
         if dev.is_kernel_driver_active(0):
             dev.detach_kernel_driver(0)
@@ -69,23 +72,22 @@ class PrinterDymo450():
     def short_form_feed(self):
         self.write_command(ord('G'))
 
-    def print_image(self, image):
-        nbytes = (image.width + 7) // 8
+    def __print_image(self, width, height, image_data):
+        nbytes = (width + 7) // 8
 
         packed_lines = []
-        data = image.getdata()
 
-        for row in range(image.height):
+        for row in range(height):
             line = []
             for byte in range(nbytes):
                 b = 0
                 for bit in range(8):
                     col = (byte * 8) + bit
-                    if col >= image.width:
+                    if col >= width:
                         break
 
-                    idx = row * image.width + col
-                    v = data[idx]
+                    idx = row * width + col
+                    v = image_data[idx]
                     if v == 0:
                         # Scanline columns are MSB-first
                         # Determined empricially.
@@ -96,7 +98,7 @@ class PrinterDymo450():
         self.sync()
         self.write_command(ord('D'), [nbytes])
 
-        nrows = image.height + 100
+        nrows = len(packed_lines) + 100
         n1 = nrows // 256
         n2 = nrows % 256
         self.write_command(ord('L'), [n1, n2])
@@ -105,6 +107,23 @@ class PrinterDymo450():
             self.write_data(line)
 
         self.form_feed()
+
+    def print_image(self, image, thread=False):
+        # Always wait for any previous print job
+        if self.print_proc:
+            self.print_proc.join()
+            self.print_proc = None
+
+        width = image.width
+        height = image.height
+        image_data = image.getdata()
+
+        if thread:
+            self.print_proc = multiprocessing.Process(target=self.__print_image,
+                                                      args=(width, height, image_data))
+            self.print_proc.start()
+        else:
+            self.__print_image(width, height, image_data)
 
 def main():
     printer = PrinterDymo450()

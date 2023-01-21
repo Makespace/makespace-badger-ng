@@ -113,7 +113,7 @@ class NameBadgeUI(tk.Frame):
         print("Printing...")
         self.update_preview()
         img = self.preview.image()
-        self.printer.print_image(img)
+        self.printer.print_image(img, thread=True)
 
     def create_widgets(self):
         row = 0
