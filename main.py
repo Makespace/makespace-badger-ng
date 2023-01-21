@@ -7,10 +7,12 @@ from fakereader import FakeTagReader
 from printer import DisplayPrinter, RotatePrinter
 from printer_d450 import PrinterDymo450
 from app_ui import BadgerApp
+from sound import SoundThread
 import argparse
 import datetime
 import time
 import tkinter as tk
+import multiprocessing
 from tkinter import ttk
 
 def open_db(args):
@@ -116,9 +118,19 @@ def run_ui(args):
             tagreader = None
             print("Couldn't open tag reader (did you specify the correct --port?)")
 
+    if args.sound:
+        queue = multiprocessing.Queue()
+        sound = SoundThread(queue)
+        soundproc = multiprocessing.Process(target=sound.run)
+        soundproc.start()
+    else:
+        sound = None
+
     root.resizable(False,False)
-    app = BadgerApp(root, printer=printer, tagreader=tagreader, db=db)
+    app = BadgerApp(root, printer=printer, tagreader=tagreader, db=db, sound=sound)
     app.mainloop()
+    sound.stop()
+    soundproc.join()
 
 def main():
     parser = argparse.ArgumentParser(
@@ -182,6 +194,7 @@ def main():
     ui_parser.add_argument('--port', help='Serial port for the tag reader', default='/dev/ttyUSB0')
     ui_parser.add_argument('-d', '--database', help='sqlite3 database file', default=None)
     ui_parser.add_argument('--init', help="Initialise the database", action='store_true')
+    ui_parser.add_argument('--sound', help="Run the sound thread", action='store_true')
     ui_parser.add_argument('--printer', help='Printer to use', choices=['display', 'display_r90', 'd450'], default='display')
     ui_parser.set_defaults(func=run_ui)
 
