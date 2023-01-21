@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
 
 import serial
+import time
 
 class TagReader():
     def __init__(self, port):
         self.ser = serial.Serial(port, rtscts=1, timeout=0.2)
 
     def read_tag(self):
+        while self.ser.getCTS():
+            time.sleep(0.001)
+            pass # wait if CTS was already active
+
         self.ser.write(b'U')
         self.ser.flush()
         response = self.ser.read()
