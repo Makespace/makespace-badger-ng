@@ -2,7 +2,7 @@
 
 import tkinter as tk
 from tkinter import ttk
-from ui import NameBadgeUI, TroveLabelUI, GeneralLabelUI, DatabaseUI
+from ui import NameBadgeUI, TroveLabelUI, GeneralLabelUI, DatabaseUI, UpdateDelayer
 from printer import DisplayPrinter
 
 class BadgerApp(ttk.Frame):
@@ -21,6 +21,11 @@ class BadgerApp(ttk.Frame):
 
         self.event_add("<<Tag_Present>>", "None")
         self.bind('<<Tag_Present>>', self.handle_tag)
+
+        self.eraser = UpdateDelayer(self, self.clear_screens, update_delay_ms=30000)
+
+        self.event_add("<<Interacted>>", "None")
+        self.bind_all('<<Interacted>>', self.handle_interacted)
 
         self.namebadge_ui = NameBadgeUI(self.nb, self.printer)
         self.trovelabel_ui = TroveLabelUI(self.nb, self.printer)
@@ -50,9 +55,20 @@ class BadgerApp(ttk.Frame):
 
         self.after(300, self.__check_for_tag)
 
+    def handle_interacted(self, event):
+        self.eraser.set_modified()
+
+    def clear_screens(self):
+        self.trovelabel_ui.reset()
+        self.namebadge_ui.reset()
+        self.general_ui.reset()
+        self.db_ui.reset()
+
     def handle_tag(self, event):
         if not self.tagreader:
             return
+
+        self.eraser.set_modified()
 
         tag = self.tagreader.read_tag()
         if tag and tag == self.wait_for_tag_gone:

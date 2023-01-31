@@ -91,6 +91,7 @@ class NameBadgeUI(tk.Frame):
     def update_preview(self):
         lines = self.get_lines()
         self.preview.update(lines)
+        self.event_generate("<<Interacted>>")
 
     def get_lines(self):
         name_text = self.namevar.get()
