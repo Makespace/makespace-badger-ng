@@ -35,6 +35,8 @@ class PrinterDymo450():
 
         assert (self.ep_out is not None) and (self.ep_in is not None)
 
+        self.reset()
+
     def close(self):
         usb.util.dispose_resources(self.dev)
         self.dev = None
