@@ -32,6 +32,14 @@ class Database():
         if cur.rowcount != 1:
             raise Exception("tag update failed - does it exist?")
 
+    def delete(self, tag):
+        cur = self.conn.cursor()
+        # seems you can't use variables in a where clause...
+        cur.execute("DELETE FROM Tags WHERE Tag=x'"+tag.hex()+"'")
+        self.conn.commit()
+        if cur.rowcount != 1:
+            raise Exception("tag update failed - does it exist?")
+
     def insert(self, tag, name, comment):
         t = (name, comment)
         cur = self.conn.cursor()

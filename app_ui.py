@@ -109,3 +109,11 @@ class BadgerApp(ttk.Frame):
                 self.trovelabel_ui.populate(name, comment)
                 self.nb.select(self.trovelabel_ui)
                 self.namebadge_ui.populate(name, comment)
+            elif buttons == 3:
+                print(f"Erase tag: {tag}")
+                try:
+                    self.db.delete(tag)
+                    self.db_ui.populate(tag, "Your Name", "Your Comment")
+                    self.nb.select(self.db_ui)
+                except Exception as e:
+                    print("Erase failed:", e)
