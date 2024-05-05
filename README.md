@@ -97,6 +97,7 @@ It depends on:
 * pyserial
 * pyusb
 * tkinter (part of standard Python 3 installation)
+* playsound
 
 There's quite a few command-line options and different commands, but for the
 main UI:
@@ -107,10 +108,10 @@ python3 main.py ui --port=/dev/ttyUSB0 --printer=d450 --database=badge.db --soun
 
 ## TODO List
 
-* The 10mm margin should be implemented more cleanly. At the moment, the label
+* ~~The 10mm margin should be implemented more cleanly. At the moment, the label
   size is just reduced by 10mm before instantiating Label()
   It would be better to pass a margin down to the Label() class and have it
-  handle it.
+  handle it.~~
 * The sound filenames are hard-coded, and the audio files themselves aren't
   checked in to the repo.
   * Find or create a beep which we can be sure we can include in the repo.
