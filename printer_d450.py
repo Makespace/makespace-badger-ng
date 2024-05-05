@@ -37,6 +37,10 @@ class PrinterDymo450():
 
         self.reset()
 
+    @property
+    def dpi(self):
+        return 300
+
     def close(self):
         usb.util.dispose_resources(self.dev)
         self.dev = None

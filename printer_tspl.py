@@ -36,6 +36,10 @@ class PrinterTSPL():
 
         assert (self.ep_out is not None) and (self.ep_in is not None)
 
+    @property
+    def dpi(self):
+        return 203
+
     def write_command(self, command_str):
         buf = bytes(f"\r\n{command_str}\r\n", "utf-8")
         self.ep_out.write(buf)

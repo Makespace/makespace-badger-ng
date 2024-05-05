@@ -21,11 +21,12 @@ class LabelPreview(tk.Frame):
     __label_height_mm = 36
     __aspect_ratio = __label_height_mm / __label_width_mm
 
-    def __init__(self, master=None, width=400):
+    def __init__(self, master=None, width=400, dpi=300):
         super().__init__(master)
         self.master = master
         self.canvas_width = width
         self.canvas_height = int(width * LabelPreview.__aspect_ratio)
+        self.dpi = dpi
 
         self.canvas = tk.Canvas(self, width=self.canvas_width, height=self.canvas_height, background='white', bd=0)
         self.canvas.pack()
@@ -37,7 +38,7 @@ class LabelPreview(tk.Frame):
             return
         self.lines = copy.deepcopy(lines)
 
-        self.lbl = Label(lines, dpi=300,
+        self.lbl = Label(lines, dpi=self.dpi,
                          size_mm=(LabelPreview.__label_width_mm, LabelPreview.__label_height_mm))
         img = self.lbl.image()
         img = img.resize((self.canvas_width, self.canvas_height))
@@ -148,7 +149,7 @@ class NameBadgeUI(tk.Frame):
         self.preview_lbl.grid(column = 0, row = row, sticky='w')
         row +=1
 
-        self.preview = LabelPreview(self, 400)
+        self.preview = LabelPreview(self, 400, self.printer.dpi)
         self.preview.grid(column = 0, row = row, columnspan=2)
         row += 1
 
@@ -245,7 +246,7 @@ class DatabaseUI(tk.Frame):
         self.preview_lbl.grid(column = 0, row = row, sticky='w')
         row +=1
 
-        self.preview = LabelPreview(self, 400)
+        self.preview = LabelPreview(self, 400, self.printer.dpi)
         self.preview.grid(column = 0, row = row, columnspan=2)
         row += 1
 
@@ -419,7 +420,7 @@ class TroveLabelUI(tk.Frame):
         self.preview_lbl.grid(column = 0, row = row, sticky='w')
         row += 1
 
-        self.preview = LabelPreview(self, 400)
+        self.preview = LabelPreview(self, 400, self.printer.dpi)
         self.preview.grid(column = 0, row = row, columnspan=3)
         row += 1
 
@@ -507,7 +508,7 @@ class GeneralLabelUI(tk.Frame):
         self.preview_lbl.grid(column = 0, row = row, sticky='w')
         row +=1
 
-        self.preview = LabelPreview(self, 400)
+        self.preview = LabelPreview(self, 400, self.printer.dpi)
         self.preview.grid(column = 0, row = row)
         row += 1
 
