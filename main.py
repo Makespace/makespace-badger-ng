@@ -6,6 +6,7 @@ from tagreader import TagReader
 from fakereader import FakeTagReader
 from printer import DisplayPrinter, RotatePrinter
 from printer_d450 import PrinterDymo450
+from printer_tspl import PrinterVretti420B
 from app_ui import BadgerApp
 from sound import SoundThread
 import argparse
@@ -105,6 +106,8 @@ def run_ui(args):
         printer = RotatePrinter(DisplayPrinter())
     elif args.printer == 'd450':
         printer = RotatePrinter(PrinterDymo450())
+    elif args.printer == 'vretti':
+        printer = RotatePrinter(PrinterVretti420B())
     else:
         raise ValueError("No printer?")
 
@@ -195,7 +198,7 @@ def main():
     ui_parser.add_argument('-d', '--database', help='sqlite3 database file', default=None)
     ui_parser.add_argument('--init', help="Initialise the database", action='store_true')
     ui_parser.add_argument('--sound', help="Run the sound thread", action='store_true')
-    ui_parser.add_argument('--printer', help='Printer to use', choices=['display', 'display_r90', 'd450'], default='display')
+    ui_parser.add_argument('--printer', help='Printer to use', choices=['display', 'display_r90', 'd450', 'vretti'], default='display')
     ui_parser.set_defaults(func=run_ui)
 
     args = parser.parse_args()
