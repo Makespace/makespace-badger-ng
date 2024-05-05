@@ -41,6 +41,11 @@ class PrinterDymo450():
     def dpi(self):
         return 300
 
+    def padding(self):
+        # XXX: There seems to be an unavoidable 5mm margin on the right edge,
+        # So just scale down the label by 10mm.
+        return (10, 0)
+
     def close(self):
         usb.util.dispose_resources(self.dev)
         self.dev = None

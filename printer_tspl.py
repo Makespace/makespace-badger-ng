@@ -40,6 +40,9 @@ class PrinterTSPL():
     def dpi(self):
         return 203
 
+    def padding(self):
+        return (0, 0)
+
     def write_command(self, command_str):
         buf = bytes(f"\r\n{command_str}\r\n", "utf-8")
         self.ep_out.write(buf)
