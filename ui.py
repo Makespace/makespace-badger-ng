@@ -12,7 +12,7 @@ from printer import DisplayPrinter
 
 import time
 
-UPDATE_DELAY=500
+UPDATE_DELAY=200
 
 class LabelPreview(tk.Frame):
     def __init__(self, master=None, width=400, dpi=300, padding=(0, 0)):
