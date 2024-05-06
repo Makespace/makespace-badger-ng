@@ -5,9 +5,10 @@ import queue
 from playsound import playsound
 
 class SoundThread:
-    def __init__(self, queue):
-        self.poll_time_ms = 1000
+    def __init__(self, queue, play_silence=False):
+        self.poll_time_ms = 1000 if play_silence else 100000
         self.queue = queue
+        self.play_silence = play_silence
 
         beep_wav = "beep.wav"
         silence_wav = "silence.wav"
@@ -28,7 +29,8 @@ class SoundThread:
                 elif cmd == "beep":
                     playsound(self.beep_file)
             except queue.Empty:
-                playsound(self.silence_file)
+                if self.play_silence:
+                    playsound(self.silence_file)
 
     def stop(self):
         self.queue.put("stop")
