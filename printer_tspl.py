@@ -93,8 +93,6 @@ class PrinterTSPL():
 
         self.write_command("PRINT 1,1")
 
-        self.form_feed()
-
     def print_image(self, image, thread=False):
         # Always wait for any previous print job
         if self.print_proc:
