@@ -15,13 +15,18 @@ import time
 UPDATE_DELAY=200
 
 class LabelPreview(tk.Frame):
-    def __init__(self, master=None, width=400, dpi=300, padding=(0, 0)):
+    def __init__(self, master=None, width=400, dpi=300, size_mm=(89, 36), padding_mm=(0, 0, 0, 0)):
         super().__init__(master)
         self.master = master
 
-        self.label_width_mm = 89 - padding[0]
-        self.label_height_mm = 36 - padding[1]
-        self.aspect_ratio = self.label_height_mm / self.label_width_mm
+        self.size_mm = size_mm
+        self.padding_mm = Label.Padding(
+            left=padding_mm[0],
+            top=padding_mm[1],
+            right=padding_mm[2],
+            bottom=padding_mm[3],
+        )
+        self.aspect_ratio = self.size_mm[1] / self.size_mm[0]
 
         self.canvas_width = width
         self.canvas_height = int(width * self.aspect_ratio)
@@ -38,7 +43,8 @@ class LabelPreview(tk.Frame):
         self.lines = copy.deepcopy(lines)
 
         self.lbl = Label(lines, dpi=self.dpi,
-                         size_mm=(self.label_width_mm, self.label_height_mm))
+                         size_mm=self.size_mm,
+                         padding_mm=self.padding_mm)
         img = self.lbl.image()
         img = img.resize((self.canvas_width, self.canvas_height))
         self.bmp = ImageTk.BitmapImage(img, foreground='white')
@@ -148,7 +154,7 @@ class NameBadgeUI(tk.Frame):
         self.preview_lbl.grid(column = 0, row = row, sticky='w')
         row +=1
 
-        self.preview = LabelPreview(self, 400, self.printer.dpi, self.printer.padding())
+        self.preview = LabelPreview(self, 400, self.printer.dpi, padding_mm=self.printer.padding())
         self.preview.grid(column = 0, row = row, columnspan=2)
         row += 1
 
@@ -245,7 +251,7 @@ class DatabaseUI(tk.Frame):
         self.preview_lbl.grid(column = 0, row = row, sticky='w')
         row +=1
 
-        self.preview = LabelPreview(self, 400, self.printer.dpi, self.printer.padding())
+        self.preview = LabelPreview(self, 400, self.printer.dpi, padding_mm=self.printer.padding())
         self.preview.grid(column = 0, row = row, columnspan=2)
         row += 1
 
@@ -419,7 +425,7 @@ class TroveLabelUI(tk.Frame):
         self.preview_lbl.grid(column = 0, row = row, sticky='w')
         row += 1
 
-        self.preview = LabelPreview(self, 400, self.printer.dpi, self.printer.padding())
+        self.preview = LabelPreview(self, 400, self.printer.dpi, padding_mm=self.printer.padding())
         self.preview.grid(column = 0, row = row, columnspan=3)
         row += 1
 
@@ -507,7 +513,7 @@ class GeneralLabelUI(tk.Frame):
         self.preview_lbl.grid(column = 0, row = row, sticky='w')
         row +=1
 
-        self.preview = LabelPreview(self, 400, self.printer.dpi, self.printer.padding())
+        self.preview = LabelPreview(self, 400, self.printer.dpi, padding_mm=self.printer.padding())
         self.preview.grid(column = 0, row = row)
         row += 1
 

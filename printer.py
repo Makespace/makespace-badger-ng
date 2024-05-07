@@ -13,8 +13,9 @@ class DisplayPrinter:
     def dpi(self):
         return 300
 
+    # In mm, (left, top, right, bottom)
     def padding(self):
-        return (0, 0)
+        return (2, 0, 2, 0)
 
 class RotatePrinter:
     def __init__(self, printer=None, rot=90):
@@ -30,5 +31,6 @@ class RotatePrinter:
     def dpi(self):
         return self.printer.dpi
 
+    # In mm, (left, top, right, bottom)
     def padding(self):
         return self.printer.padding()

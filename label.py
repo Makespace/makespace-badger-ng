@@ -1,11 +1,20 @@
 #!/usr/bin/env python3
 
+from dataclasses import dataclass
+
 from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw
 
-class Label():
-    class LabelLine():
+class Label:
+    @dataclass(frozen=True)
+    class Padding:
+        left: int = 0
+        top: int = 0
+        right: int = 0
+        bottom: int = 0
+
+    class LabelLine:
         def __init__(self, font, line, boxes):
             self.font = font
             self.line = line
@@ -29,12 +38,20 @@ class Label():
     def __mm_to_px(self, mm):
         return int((mm / 25.4) * self.dpi)
 
-    # XXX: There seems to be an unavoidable 5mm margin on the right edge,
-    # So just scale down the label by 10mm.
-    def __init__(self, lines, dpi=300, size_mm=(89-10, 36)):
+    def __init__(self, lines, dpi=300, size_mm=(89, 36), padding_mm=Padding(0, 0, 0, 0)):
         self.dpi = dpi
         self.res = [self.__mm_to_px(s) for s in size_mm]
         self.img = None
+        self.padding = Label.Padding(
+            left=self.__mm_to_px(padding_mm.left),
+            top=self.__mm_to_px(padding_mm.top),
+            right=self.__mm_to_px(padding_mm.right),
+            bottom=self.__mm_to_px(padding_mm.bottom),
+        )
+        self.usable_res = [
+            self.res[0] - (self.padding.left + self.padding.right),
+            self.res[1] - (self.padding.top + self.padding.bottom),
+        ]
 
         lines_copy = []
         # Make sure all entries are a list of entries
@@ -48,9 +65,9 @@ class Label():
         # Assign the appropriate maximum line percentages
         if len(self.lines) <= len(Label.__line_portions):
             portions = Label.__line_portions[len(self.lines)-1]
-            self.max_line_heights = [int(portions[i] * self.res[1]) for i in range(len(self.lines))]
+            self.max_line_heights = [int(portions[i] * self.usable_res[1]) for i in range(len(self.lines))]
         else:
-            max_height = int(0.9 / len(self.lines) * self.res[1])
+            max_height = int(0.9 / len(self.lines) * self.usable_res[1])
             self.max_line_heights = [int(max_height)]  * len(self.lines)
 
         size = self.max_line_heights[0]
@@ -62,7 +79,7 @@ class Label():
         size = self.max_line_heights[idx]
         line = self.lines[idx]
 
-        max_elem_width = self.res[0] // len(line)
+        max_elem_width = self.usable_res[0] // len(line)
 
         # Binary search to find the maximum allowable size that fits
         max_font_size = size
@@ -73,15 +90,13 @@ class Label():
             # fix that, but it doesn't.
             font = self.base_font.font_variant(size=size)
 
+            total_gap_width = 0
             if len(line) > 1:
                 # left, top, right, bottom
                 gap_bbox = font.getbbox('  ')
-                gap_width = gap_bbox[2] - gap_bbox[0]
-            else:
-                # Still give some border at the edge
-                # TODO: When "margin" is implemented, this will be unnecessary
-                gap_width = 4;
-            max_elem_width = (self.res[0] // len(line)) - gap_width
+                total_gap_width = (gap_bbox[2] - gap_bbox[0]) * (len(line) - 1)
+
+            max_elem_width = (self.usable_res[0] - total_gap_width) // len(line)
 
             ok = True
             boxes = []
@@ -129,18 +144,18 @@ class Label():
 
         # Distribute the lines with an equal gap between them
         total_height = sum([lp.height for lp in line_params])
-        spare_height = self.res[1] - total_height
+        spare_height = self.usable_res[1] - total_height
         line_gap = spare_height // len(self.lines)
 
         # Top and bottom gap is half the gap between lines
-        line_top = line_gap // 2
+        line_top = (line_gap // 2) + self.padding.top
         for i, lp in enumerate(line_params):
             # Columns get distributed evenly among all elements
             # TODO: Is this really ideal? If the elements are very different
             # lengths, it looks strange
-            col_width = self.res[0] // len(lp.line)
+            col_width = self.usable_res[0] // len(lp.line)
 
-            x = col_width // 2
+            x = (col_width // 2) + self.padding.left
             for j, elem in enumerate(lp.line):
                 d.text((x, line_top), elem, font=lp.font, fill=0, anchor='mt')
                 x += col_width
