@@ -54,7 +54,11 @@ class Label():
             self.max_line_heights = [int(max_height)]  * len(self.lines)
 
         size = self.max_line_heights[0]
-        self.base_font = ImageFont.truetype(font="Arial.ttf", size=size)
+        try:
+            self.base_font = ImageFont.truetype(font="Arial.ttf", size=size)
+        except OSError:
+            print("Trying backup font for label creation")
+            self.base_font = ImageFont.truetype(font="DejaVuSans.ttf", size=size)
 
     # Work out the appropriate font size for the line, based on the allowable
     # max_line_height, and the width of the image
