@@ -49,12 +49,19 @@ class PrinterTSPL():
         self.ep_out.write(buf)
 
     def calibrate(self, label_mm, gap_mm):
-        label_dots = label_mm * 8
-        gap_dots = gap_mm * 8
+        label_dots = int(label_mm * 8)
+        gap_dots = int(gap_mm * 8)
         self.write_command(f"GAPDETECT {label_dots},{gap_dots}")
 
     def form_feed(self):
         self.write_command("FORMFEED")
+
+    def home(self):
+        self.write_command("HOME")
+
+    def backfeed(self, distance_mm):
+        dots = int(distance_mm * 8)
+        self.write_command(f"BACKUP {dots}")
 
     def close(self):
         usb.util.dispose_resources(self.dev)
