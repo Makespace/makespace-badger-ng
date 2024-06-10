@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from db import Database
+from db_sett import Database as RemoteDatabase
 from label import Label
 from tagreader import TagReader
 from fakereader import FakeTagReader
@@ -17,22 +18,30 @@ import multiprocessing
 from tkinter import ttk
 
 def open_db(args):
-    if not args.init:
-        # Check if the DB file exists
-        try:
-            db = Database(f'file:{args.database}?mode=ro')
-            db.close()
-        except Exception as e:
-            raise
+    db_path = args.database
 
-    db = Database(args.database)
-    if args.init:
-        try:
-            db.initialise()
-        except Exception as e:
-            raise
+    if db_path.startswith("http://") or db_path.startswith("https://"):
+        if args.init:
+            raise RuntimeError("Init not supported with remote database server")
 
-    return db
+        return RemoteDatabase(db_path)
+    else:
+        if not args.init:
+            # Check if the DB file exists
+            try:
+                db = Database(f'file:{args.database}?mode=ro')
+                db.close()
+            except Exception as e:
+                raise
+
+        db = Database(args.database)
+        if args.init:
+            try:
+                db.initialise()
+            except Exception as e:
+                raise
+
+        return db
 
 def enrol(args):
     db = open_db(args)
@@ -145,7 +154,7 @@ def main():
     # Command arguments for db commands
     db_cmd_parser = argparse.ArgumentParser(description="parent parser for db commands", add_help = False)
     db_cmd_parser.add_argument('--init', action='store_true')
-    db_cmd_parser.add_argument('-d', '--database', help='sqlite3 database file', required=True)
+    db_cmd_parser.add_argument('-d', '--database', help='Database file or server URL', required=True)
 
     # Common arguments for tag handling commands
     tag_cmd_parser = argparse.ArgumentParser(description="parent parser for tag commands", add_help = False)
@@ -188,14 +197,14 @@ def main():
     reader_parser.add_argument('--port', help='Serial port for the tag reader', default='/dev/ttyUSB0')
     reader_parser.add_argument('--timeout', help='Timeout before giving up (seconds)', type=int, default=5)
     reader_parser.add_argument('--loop', help='Loop reading, otherwise exit after first read', action='store_true')
-    reader_parser.add_argument('-d', '--database', help='sqlite3 database file')
+    reader_parser.add_argument('-d', '--database', help='Database file or server URL')
     reader_parser.set_defaults(func=reader)
 
     ui_parser = subparsers.add_parser('ui', add_help=True,
                                           description='Run the badger UI',
                                           help='Run the badger UI')
     ui_parser.add_argument('--port', help='Serial port for the tag reader', default='/dev/ttyUSB0')
-    ui_parser.add_argument('-d', '--database', help='sqlite3 database file', default=None)
+    ui_parser.add_argument('-d', '--database', help='Database file or server URL', default=None)
     ui_parser.add_argument('--init', help="Initialise the database", action='store_true')
     ui_parser.add_argument('--sound', help="Run the sound thread", action='store_true')
     ui_parser.add_argument('--printer', help='Printer to use', choices=['display', 'display_r90', 'd450', 'vretti'], default='display')
