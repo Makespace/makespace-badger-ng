@@ -18,10 +18,10 @@ class Database():
             raise RuntimeError(f"request failed: {r.status_code}")
 
         result = r.json()
-        return result["name"], result["contact_data"]
+        return result["name"], result["contactData"]
 
     def update(self, tag, name, comment):
-        payload = { "fob_id": tag.hex(), "name": name, "contact_data": comment }
+        payload = { "fobId": tag.hex(), "name": name, "contactData": comment }
 
         r = requests.put(self.base_url + "/api/v1/member/" + tag.hex(), json=payload)
 
@@ -34,7 +34,7 @@ class Database():
             raise RuntimeError(f"request failed: {r.status_code}")
 
     def insert(self, tag, name, comment):
-        payload = { "fob_id": tag.hex(), "name": name, "contact_data": comment }
+        payload = { "fobId": tag.hex(), "name": name, "contactData": comment }
 
         r = requests.post(self.base_url + "/api/v1/member", json=payload)
 
